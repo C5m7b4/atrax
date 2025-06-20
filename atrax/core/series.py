@@ -394,6 +394,24 @@ class Series:
                 dense_rank += 1
 
         return Series(ranks, name=f"{self.name}_rank", index=self.index)
+    
+    def map(self, arg):
+        """
+        Map values of the Series using an input mapping or function.
+        
+        Parameters:
+        arg (dict or function): A mapping dictionary or a function to apply to each value.
+        
+        Returns:
+        Series: A new Series with mapped values.
+        """
+        if callable(arg):
+            mapped = [arg(x) for x in self.data]
+        elif isinstance(arg, dict):
+            mapped = [arg.get(x, None) for x in self.data]
+        else:
+            raise TypeError("Argument must be a callable or a dictionary.")
+        return Series(mapped, name=f"{self.name}_mapped", index=self.index)
 
     
     
