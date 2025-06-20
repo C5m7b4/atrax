@@ -487,3 +487,100 @@ def test_loc_slice_not_implemented():
     s = tx.Series([1, 2, 3], index=["a", "b", "c"])
     with pytest.raises(NotImplementedError):
         _ = s.loc["a":"b"]
+
+def test_series_cut_basic_equal_width():
+    s = tx.Series([1, 2, 3, 4, 5])
+    result = s.cut(bins=2)
+    assert result.data == [0, 0, 1, 1, 1]
+
+def test_series_cut_with_labels():
+    s = tx.Series([1, 2, 3, 4, 5])
+    result = s.cut(bins=2, labels=['Low', 'High'])
+    assert result.data == ['Low', 'Low', 'High', 'High', 'High']
+
+def test_series_cut_with_explicit_edges():
+    s = tx.Series([10, 20, 30, 40, 50])
+    result = s.cut(bins=[10, 30, 50], labels=['Small', 'Large'])
+    assert result.data == ['Small', 'Small', 'Large', 'Large', 'Large']
+
+def test_series_cut_tie_breaker_upper():
+    s = tx.Series([10, 20, 30])
+    result = s.cut(bins=[10, 20, 30], labels=['A', 'B'], tie_breaker='upper')
+    assert result.data == ['A', 'B', 'B']
+
+def test_series_cut_tie_breaker_lower():
+    s = tx.Series([10, 20, 30])
+    result = s.cut(bins=[10, 20, 30], labels=['A', 'B'], tie_breaker='lower')
+    assert result.data == ['A', 'A', 'B']
+
+def test_series_cut_handles_none():
+    s = tx.Series([10, None, 30, None])
+    result = s.cut(bins=[10, 20, 40], labels=['Low', 'High'])
+    assert result.data == ['Low', None, 'High', None]
+
+def test_series_cut_includes_first_bin_edge_on_lower():
+    s = tx.Series([10, 11, 20])
+    result = s.cut(bins=[10, 20], labels=['X'], tie_breaker='lower')
+    assert result.data == ['X', 'X', 'X']
+
+def test_series_cut_returns_series_type():
+    s = tx.Series([1, 2, 3])
+    result = s.cut(bins=2)
+    assert isinstance(result, tx.Series)      
+
+def test_rank_basic_order():
+    s = tx.Series([10, 20, 30])
+    result = s.rank()
+    assert result.data == [1.0, 2.0, 3.0]
+
+def test_rank_with_duplicates_average():
+    s = tx.Series([10, 20, 20, 40])
+    result = s.rank()
+    # 10 -> 1, 20s -> average of 2 and 3 = 2.5, 40 -> 4
+    assert result.data == [1.0, 2.5, 2.5, 4.0]
+
+def test_rank_with_duplicates_min():
+    s = tx.Series([10, 20, 20, 40])
+    result = s.rank(method='min')
+    assert result.data == [1.0, 2.0, 2.0, 4.0]
+
+def test_rank_with_duplicates_max():
+    s = tx.Series([10, 20, 20, 40])
+    result = s.rank(method='max')
+    assert result.data == [1.0, 3.0, 3.0, 4.0]
+
+def test_rank_with_duplicates_dense():
+    s = tx.Series([10, 20, 20, 40])
+    result = s.rank(method='dense')
+    # 10 -> 1, 20s -> 2, 40 -> 3
+    assert result.data == [1.0, 2.0, 2.0, 3.0]
+
+def test_rank_with_duplicates_first():
+    s = tx.Series([10, 20, 20, 40])
+    result = s.rank(method='first')
+    # based on position: 10->1, first 20->2, second 20->3, 40->4
+    assert result.data == [1.0, 2.0, 3.0, 4.0]
+
+def test_rank_descending():
+    s = tx.Series([10, 20, 30])
+    result = s.rank(ascending=False)
+    assert result.data == [3.0, 2.0, 1.0]
+
+@pytest.mark.skip(reason="We have not implemented this yet.")
+def test_rank_handles_none():
+    s = tx.Series([10, None, 30])
+    result = s.rank()
+    # None is skipped; 10->1, 30->2
+    assert result.data == [1.0, None, 2.0]
+
+def test_rank_returns_series():
+    s = tx.Series([5, 1, 3])
+    result = s.rank()
+    assert isinstance(result, tx.Series)
+
+def test_rank_preserves_index():
+    s = tx.Series([100, 50, 75], index=['a', 'b', 'c'])
+    result = s.rank()
+    assert result.index == ['a', 'b', 'c']
+    assert result.data == [3.0, 1.0, 2.0]
+

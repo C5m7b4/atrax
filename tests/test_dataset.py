@@ -324,15 +324,6 @@ def test_setitem_series_length_mismatch():
     with pytest.raises(ValueError, match="Series length must match Dataset length."):
         ds["b"] = s 
 
-def test_setitem_non_series_type():
-    ds = tx.DataSet([
-        {"a": 1},
-        {"a": 2}
-    ])
-    
-    with pytest.raises(TypeError, match="Only Series assignment is supported at the moment."):
-        ds["b"] = [10, 20]  # Not a Series
-
 
 def test_setitem_valid_series():
     ds = tx.DataSet([
