@@ -317,6 +317,10 @@ class Series:
             bin_edges = bins
 
         def assign_bin(val):
+            if tie_breaker == 'lower' and val == bin_edges[0]:
+                return labels[0] if labels else 0
+            
+            
             for i in range(len(bin_edges) - 1):
                 left = bin_edges[i]
                 right = bin_edges[i + 1]
@@ -332,6 +336,64 @@ class Series:
         
         binned = [assign_bin(v) if v is not None else None for v in self.data]
         return Series(binned, name=self.name, index=self.index)
+    
+    def rank(self, method='average', ascending=True):
+        """
+        Compute numerical data ranks (1 through n) along the Series.
+        
+        Parameters:
+        - method: {'average', 'min', 'max', 'first', 'dense'}, default 'average'
+        - ascending: boolean, default True
+        
+        Returns:
+        Series: A new Series with ranked values.
+        """
+        values = self.data
+        indexed = list(enumerate(values))
+
+        if not ascending:
+            indexed.sort(key=lambda x: -x[1])
+        else:
+            indexed.sort(key=lambda x: x[1])
+
+        ranks = [0] * len(values)
+        cur_rank = 1
+        dense_rank = 1
+        i = 0
+
+        while i < len(indexed):
+            j = i
+            # find group of tied values
+            while j + 1 < len(indexed) and indexed[j + 1][1] == indexed[i][1]:
+                j+= 1
+
+            group = indexed[i:j + 1]
+            indices = [idx for idx, _ in group]
+            group_size = len(group)
+
+            if method == 'average':
+                avg_rank = sum(range(cur_rank, cur_rank + group_size)) / group_size
+                for idx in indices:
+                    ranks[idx] = avg_rank
+            elif method == 'min':
+                for idx in indices:
+                    ranks[idx] = cur_rank
+            elif method == 'max':
+                for idx in indices:
+                    ranks[idx] = cur_rank + group_size - 1
+            elif method == 'first':
+                for offset, (idx, _) in enumerate(group):
+                    ranks[idx] = cur_rank + offset
+            elif method == 'dense':
+                for idx in indices:
+                    ranks[idx] = dense_rank
+
+            i = j + 1
+            cur_rank += group_size
+            if method == 'dense':
+                dense_rank += 1
+
+        return Series(ranks, name=f"{self.name}_rank", index=self.index)
 
     
     
