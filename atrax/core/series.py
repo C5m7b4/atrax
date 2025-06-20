@@ -290,6 +290,48 @@ class Series:
         if not isinstance(window, int) or window <= 0:
             raise ValueError("Window size must be a positive integer.")
         return RollingSeries(self.data, window=window, name=self.name)
+    
+    def cut(self, bins=4, labels=None, precision=3, tie_breaker='upper'):
+        """
+        Bin the Series into discrete intervals.
+        
+        Parameters:
+        bins (int): Number of bins to create. Defaults to 4.
+        labels (list): Optional labels for the bins. If None, default labels will be used.
+        precision (int): Number of decimal places for bin edges. Defaults to 3.
+        tie_breaker (str): How to handle ties ('upper', 'lower', 'random'). Defaults to 'upper'.
+        
+        Returns:
+        Series: A new Series with binned data.
+        """
+        if not self.data:
+            return Series([], name=self.name, index=self.index)
+        
+        clean_data = [v for v in self.data if v is not None]
+        min_val, max_val = min(clean_data), max(clean_data)
+
+        if isinstance(bins, int):
+            step = (max_val - min_val) / bins
+            bin_edges = [round(min_val + i * step, precision) for i in range(bins + 1)]
+        else:
+            bin_edges = bins
+
+        def assign_bin(val):
+            for i in range(len(bin_edges) - 1):
+                left = bin_edges[i]
+                right = bin_edges[i + 1]
+                if tie_breaker == 'upper':
+                    if left <= val < right:
+                        return labels[i] if labels else i
+                else:
+                    if left < val <= right:
+                        return labels[i] if labels else i
+            if val == bin_edges[-1]:
+                return labels[-1] if labels else len(bin_edges) - 2
+            return None
+        
+        binned = [assign_bin(v) if v is not None else None for v in self.data]
+        return Series(binned, name=self.name, index=self.index)
 
     
     
