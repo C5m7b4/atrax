@@ -223,6 +223,7 @@ class DataSet:
         """Return a summary of the data including the number of rows, columns, and data types."""
         print(f"<class 'atrax.Atrax'>")
         print(f"columns (total {len(self.columns)}):")
+        print(f"total rows: {len(self.data)}")
         if not self.data:
             print("   No data available")
             return
@@ -607,51 +608,87 @@ class GroupBy:
             grouped[key].append(row)
         return grouped
     
-    def agg(self, agg_dict):
+    def agg(self, *args, **kwargs):
         result = []
 
+        # determine aggregation mode
+        if args and isinstance(args[0], dict):
+            agg_spec = args[0]
+            named_agg = False
+        elif kwargs:
+            agg_spec = kwargs
+            named_agg = True
+        else:
+            raise ValueError("agg() requires either a dict or named arguments")
+        
         for group_key, rows in self.groups.items():
-            # collect all values per column across the group
             col_data = {}
             for row in rows:
                 for col, val in row.items():
                     col_data.setdefault(col, []).append(val)
 
             aggregated_row = {}
-            for col, agg_funcs in agg_dict.items():
-                values = col_data.get(col, [])
 
-                if not isinstance(agg_funcs, list):
-                    agg_funcs = [agg_funcs]
+            if named_agg:
+                for output_col, (input_col, agg_func) in agg_spec.items():
+                    values = col_data.get(input_col, [])
 
-                for agg_func in agg_funcs:
                     if isinstance(agg_func, str):
-                        colname = f"{col}_{agg_func}"
-                        if agg_func == "sum":
-                            aggregated_row[colname] = sum(values)
-                        elif agg_func == "count":
-                            aggregated_row[colname] = len(values)
-                        elif agg_func == "max":
-                            aggregated_row[colname] = max(values)
-                        elif agg_func == "min":
-                            aggregated_row[colname] = min(values)
-                        elif agg_func == "mean":
-                            aggregated_row[colname] = sum(values) / len(values)
+                        if agg_func == 'sum':
+                            aggregated_row[output_col] = sum(values)
+                        elif agg_func == 'mean':
+                            aggregated_row[output_col] = sum(values) / len(values) if values else 0
+                        elif agg_func == 'count':
+                            aggregated_row[output_col] = len(values)
+                        elif agg_func == 'min':
+                            aggregated_row[output_col] = min(values) if values else None
+                        elif agg_func == 'max':
+                            aggregated_row[output_col] = max(values) if values else None
+                        elif agg_func == 'first':
+                            aggregated_row[output_col] = values[0] if values else None
+                        elif agg_func == 'last':
+                            aggregated_row[output_col] = values[-1] if values else None
                         else:
-                            raise ValueError(f"Unsupported agg: {agg_func}")
-
+                            raise ValueError(f"Unknown aggregation function: {agg_func}")
                     elif callable(agg_func):
-                        colname = f"{col}_{agg_func.__name__}"
-                        aggregated_row[colname] = agg_func(values)
-
+                        aggregated_row[output_col] = agg_func(values)
                     else:
-                        raise TypeError("Aggregation must be string or function")
+                        raise TypeError(f"Aggregation function must be a string or callable, got {type(agg_func)}")
+            else:
+                for input_col, agg_funcs in agg_spec.items():
+                    values = col_data.get(input_col, [])
 
-            # add group key back in
+                    if not isinstance(agg_funcs, list):
+                        agg_funcs = [agg_funcs]
+
+                    for agg_func in agg_funcs:
+                        if isinstance(agg_func, str):
+                            if agg_func == 'sum':
+                                aggregated_row[input_col + '_sum'] = sum(values)
+                            elif agg_func == 'mean':
+                                aggregated_row[input_col + '_mean'] = sum(values) / len(values) if values else 0
+                            elif agg_func == 'count':
+                                aggregated_row[input_col + '_count'] = len(values)
+                            elif agg_func == 'min':
+                                aggregated_row[input_col + '_min'] = min(values) if values else None
+                            elif agg_func == 'max':
+                                aggregated_row[input_col + '_max'] = max(values) if values else None
+                            elif agg_func == 'first':
+                                aggregated_row[input_col + '_first'] = values[0] if values else None
+                            elif agg_func == 'last':
+                                aggregated_row[input_col + '_last'] = values[-1] if values else None
+                            else:
+                                raise ValueError(f"Unknown aggregation function: {agg_func}")
+                        elif callable(agg_func):
+                            colname = f"{input_col}_{agg_func.__name__}"
+                            aggregated_row[colname] = agg_func(values)
+                        else:
+                            raise TypeError(f"Aggregation function must be a string or callable, got {type(agg_func)}")
+                        
             for i, col in enumerate(self.by):
                 aggregated_row[col] = group_key[i]
-            result.append(aggregated_row)
 
+            result.append(aggregated_row)
         return DataSet(result)
 
     def sum(self):
