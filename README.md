@@ -29,3 +29,17 @@ Atrax is:
 - ⚡ Lightweight: No C extensions, no dependencies.
 
 - 🧪 Test-driven: Designed with testability and correctness in mind.
+
+### Testing
+
+To run tests:
+
+```
+pytest
+```
+
+To view the coverage run
+
+```
+start htmlcov/index.html
+```

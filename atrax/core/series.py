@@ -196,19 +196,6 @@ class Series:
     def apply(self, func):
         return Series([func(x) for x in self.data], name=self.name)
     
-    def astype(self, dtype):
-        cast_fn = {
-            'int': int,
-            'float': float,
-            'str': str,
-            'object': lambda x: x # no-op
-        }.get(dtype)
-
-        if cast_fn is None:
-            raise ValueError(f"Unsupported dtype: {dtype}")
-        
-        new_data = [cast_fn(x) for x in self.data]
-        return Series(new_data, name=self.name)
     
     def _repr_html_(self):
         """
@@ -262,17 +249,32 @@ class Series:
         Convert the Series to a specified data type.
         
         Parameters:
-        dtype (str): dtype (type): The Python type to cast to (e.g., int, float, str)
+        dtype (type): The Python type to cast to (e.g., int, float, str)
         
         Returns:
         Series: A new Series with the converted data type.
         """
+        type_map = {
+            "int": int,
+            "float": float,
+            "str": str,
+            "object": lambda x: x
+        }
+
+        if isinstance(dtype, str):
+            cast_fn = type_map.get(dtype)
+            if cast_fn is None:
+                raise ValueError(f"Unsupported dtype: {dtype}")
+        else:
+            cast_fn = dtype  # assume it's already a Python type
+
         new_data = []
         for val in self.data:
             try:
-                new_data.append(dtype(val))
+                new_data.append(cast_fn(val))
             except:
                 new_data.append(None)
+
         return Series(new_data, name=self.name, index=self.index)
     
     def rolling(self, window):

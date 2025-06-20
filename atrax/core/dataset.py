@@ -488,12 +488,16 @@ class DataSet:
             column: (str): The column name to convert.
             func: (callable): A function that takes a single value and returns the converted value.
         """
-        if row in self.data:
+        for row in self.data:
             if column in row:
                 try:
                     row[column] = func(row[column])
                 except:
                     pass
+
+
+
+
     def astype(self, dtype_map: dict):
         """Convert columns to specified data types.
         
