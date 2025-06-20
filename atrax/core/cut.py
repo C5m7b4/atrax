@@ -35,6 +35,10 @@ def cut(values, bins=4, labels=None, precision=3, tie_breaker='upper'):
 
     # bin assignment
     def assign_bin(val):
+        if tie_breaker == 'lower' and val == bin_edges[0]:
+            return labels[0] if labels else 0
+        
+        
         for i in range(len(bin_edges) - 1):
             left = bin_edges[i]
             right = bin_edges[i + 1]
