@@ -2,16 +2,19 @@ import io
 import csv
 from datetime import datetime
 import pandas as pd
+from .version import __version__
 
 
 from .core.series import Series
 from .core.dataset import DataSet
 from .core.qcut import qcut
+from .core.cut import cut
 
 class Atrax:
     Series = Series
     DataSet = DataSet
     qcut = qcut
+    cut = cut
 
     @staticmethod
     def date_range(start, end=None, periods=None, freq='D'):

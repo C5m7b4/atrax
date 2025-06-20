@@ -2,3 +2,4 @@ env
 .env.pytest_cache
 __pycache__
 atrax.egg-info
+dist
