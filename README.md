@@ -42,4 +42,15 @@ To view the coverage run
 
 ```
 start htmlcov/index.html
+
+```
+
+to build
+```
+python -m build
+```
+
+to publish
+```
+python -m twine upload dist/*
 ```
