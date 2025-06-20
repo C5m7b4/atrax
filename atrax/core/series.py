@@ -412,6 +412,41 @@ class Series:
         else:
             raise TypeError("Argument must be a callable or a dictionary.")
         return Series(mapped, name=f"{self.name}_mapped", index=self.index)
+    
+    def quantile(self, q):
+        """
+        Compute the q-th quantile of the Series.
+        
+        Parameters:
+        q (float): The quantile to compute (0 <= q <= 1).
+        
+        Returns:
+        float: The q-th quantile value.
+        """
+        if not self.data:
+            return None if isinstance(q, float) else [None for _ in q]
+        
+        sorted_data = sorted(x for x in self.data if x is not None)
+        n = len(sorted_data)
+
+        def compute_single_quantile(p):
+            if not 0 <= p <= 1:
+                raise ValueError("Quantile must be between 0 and 1.")
+            idx = p * (n-1)
+            lower = int(idx)
+            upper = min(lower + 1, n-1)
+            weight = idx - lower
+            return sorted_data[lower] * (1 - weight) + sorted_data[upper] * weight
+        
+        if isinstance(q, list):
+            return [compute_single_quantile(p) for p in q]
+        return compute_single_quantile(q)
+    
+    def percentile(self, p):
+        """ Equivalent to quantile"""
+        if isinstance(p, list):
+            return self.quantile([x/100 for x in p])
+        return self.quantile(p/100)
 
     
     

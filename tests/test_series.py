@@ -584,3 +584,23 @@ def test_rank_preserves_index():
     assert result.index == ['a', 'b', 'c']
     assert result.data == [3.0, 1.0, 2.0]
 
+def test_series_quantile():
+    s = tx.Series([10, 20, 30, 40, 50])
+    assert s.quantile(0.5) == 30
+    assert s.quantile([0.25, 0.5, 0.75]) == [20.0, 30.0, 40.0] 
+
+def test_series_quantile_empty_dataset():
+    s = tx.Series([])
+    result = s.quantile(0.5)
+    assert result is None    
+
+def test_series_quantile_invalid_p():
+    s = tx.Series([1,2,3])
+    with pytest.raises(ValueError, match="Quantile must be between 0 and 1"):
+        s.quantile(2)
+
+def test_series_percentile():
+    s = tx.Series([10, 20, 30, 40, 50])
+    assert s.percentile(50) == 30
+    assert s.percentile([25, 50, 75]) == [20.0, 30.0, 40.0]        
+
