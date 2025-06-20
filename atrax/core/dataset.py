@@ -116,10 +116,21 @@ class DataSet:
                 raise ValueError("Series length must match Dataset length.")
             for row, val in zip(self.data, value.data):
                 row[key] = val
-            if key not in self.columns:
-                self.columns.append(key)
+        elif isinstance(value, list):
+            if len(value) != len(self.data):
+                raise ValueError("List length must match Dataset length.")
+            for row, val in zip(self.data, value):
+                row[key] = val
+        elif callable(value):
+            for i, row in enumerate(self.data):
+                row[key] = value(row)
         else:
-            raise TypeError("Only Series assignment is supported at the moment.")
+            # broadcast scalar value
+            for row in self.data:
+                row[key] = value
+
+        if key not in self.columns:
+            self.columns.append(key)
 
     def __repr__(self):
         lines = [", ".join(self.columns)]
