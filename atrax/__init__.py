@@ -9,12 +9,15 @@ from .core.series import Series
 from .core.dataset import DataSet
 from .core.qcut import qcut
 from .core.cut import cut
+from .core.customdatetime import to_datetime, date_range
 
 class Atrax:
     Series = Series
     DataSet = DataSet
     qcut = qcut
     cut = cut
+    to_datetime = to_datetime
+    date_range = date_range
 
     @staticmethod
     def date_range(start, end=None, periods=None, freq='D'):
@@ -30,9 +33,9 @@ class Atrax:
             list[datetime]: list of datetime objects
         """
         if isinstance(start, str):
-            start = pd.to_datetime(start)
+            start = to_datetime(start)
         if isinstance(end, str) and end is not None:
-            end = pd.to_datetime(end)
+            end = to_datetime(end)
 
         dr = pd.date_range(start=start, end=end, periods=periods, freq=freq)
         #return list[dr.to_pydatetime()]
