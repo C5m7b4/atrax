@@ -23,51 +23,6 @@ class Atrax:
     to_datetime = to_datetime
     date_range = date_range
 
-    # @staticmethod
-    # def date_range(start, end=None, periods=None, freq='D'):
-    #     """Generate a list of datetime values.
-        
-    #     Parameters:
-    #         start (str | datetime): start date
-    #         end (str | datetime): end date (optional if periods is given)
-    #         periods (int): number of periods to generate
-    #         freq (str): frequency string (e.g. 'D', 'W' 'M')
-
-    #     Returns:
-    #         list[datetime]: list of datetime objects
-    #     """
-    #     if isinstance(start, str):
-    #         start = to_datetime(start)
-    #     if isinstance(end, str) and end is not None:
-    #         end = to_datetime(end)
-
-    #     dr = date_range(start=start, end=end, periods=periods, freq=freq)
-    #     #return list[dr.to_pydatetime()]
-    #     return dr
-
-
-    # @staticmethod
-    # def read_pandas(df: pd.DataFrame) -> 'DataSet':
-    #     """Convert a pandas DataFrame to a DataSet.
-        
-    #     Parameters:
-    #     -----------
-    #         df: (pd.DataFrame): The DataFrame to convert.
-            
-    #     Returns:
-    #     -----------
-    #         DataSet: A DataSet object containing the data from the DataFrame.
-    #     """
-    #     records = df.to_dict(orient='records')
-    #     ds = DataSet(records)
-
-    #     # set index if its named
-    #     if df.index.name:
-    #         ds._index_name = df.index.name
-    #         ds._index = df.index.tolist()
-
-    #     return ds
-
 
     @staticmethod
     def read_csv(path_or_str, from_string=False, encoding='utf-8', converters=None, usecols=None, parse_dates=None):

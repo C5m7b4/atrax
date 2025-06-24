@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List, Union, Optional, Literal
+from .series import Series
 
 def to_datetime(values: Union[str, List[str]], fmt: str = None) -> Union[datetime, List[datetime]]:
     """Convert a string or list of strings to datetime objects.
@@ -14,7 +15,7 @@ def to_datetime(values: Union[str, List[str]], fmt: str = None) -> Union[datetim
     """
     def parse_single(val: str) -> datetime:
         if fmt:
-            return datetime.strptim(val, fmt)
+            return datetime.strptime(val, fmt)
         else:
             # automatic fallback using fromisoformat or common formats
             try: 
@@ -30,6 +31,8 @@ def to_datetime(values: Union[str, List[str]], fmt: str = None) -> Union[datetim
     if isinstance(values, str):
         return parse_single(values)
     elif isinstance(values, list):
+        return [parse_single(val) for val in values]
+    elif isinstance(values, Series):
         return [parse_single(val) for val in values]
     else:
         raise TypeError("Input must be a string or a list of strings.")
