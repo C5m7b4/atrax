@@ -1,7 +1,11 @@
 import io
 import csv
 from datetime import datetime
-import pandas as pd
+from typing import Union
+import sqlite3
+import psycopg2
+from sqlalchemy import Engine, Connection, create_engine, text
+# import pandas as pd
 from .version import __version__
 
 
@@ -19,50 +23,50 @@ class Atrax:
     to_datetime = to_datetime
     date_range = date_range
 
-    @staticmethod
-    def date_range(start, end=None, periods=None, freq='D'):
-        """Generate a list of datetime values.
+    # @staticmethod
+    # def date_range(start, end=None, periods=None, freq='D'):
+    #     """Generate a list of datetime values.
         
-        Parameters:
-            start (str | datetime): start date
-            end (str | datetime): end date (optional if periods is given)
-            periods (int): number of periods to generate
-            freq (str): frequency string (e.g. 'D', 'W' 'M')
+    #     Parameters:
+    #         start (str | datetime): start date
+    #         end (str | datetime): end date (optional if periods is given)
+    #         periods (int): number of periods to generate
+    #         freq (str): frequency string (e.g. 'D', 'W' 'M')
 
-        Returns:
-            list[datetime]: list of datetime objects
-        """
-        if isinstance(start, str):
-            start = to_datetime(start)
-        if isinstance(end, str) and end is not None:
-            end = to_datetime(end)
+    #     Returns:
+    #         list[datetime]: list of datetime objects
+    #     """
+    #     if isinstance(start, str):
+    #         start = to_datetime(start)
+    #     if isinstance(end, str) and end is not None:
+    #         end = to_datetime(end)
 
-        dr = pd.date_range(start=start, end=end, periods=periods, freq=freq)
-        #return list[dr.to_pydatetime()]
-        return dr
+    #     dr = date_range(start=start, end=end, periods=periods, freq=freq)
+    #     #return list[dr.to_pydatetime()]
+    #     return dr
 
 
-    @staticmethod
-    def read_pandas(df: pd.DataFrame) -> 'DataSet':
-        """Convert a pandas DataFrame to a DataSet.
+    # @staticmethod
+    # def read_pandas(df: pd.DataFrame) -> 'DataSet':
+    #     """Convert a pandas DataFrame to a DataSet.
         
-        Parameters:
-        -----------
-            df: (pd.DataFrame): The DataFrame to convert.
+    #     Parameters:
+    #     -----------
+    #         df: (pd.DataFrame): The DataFrame to convert.
             
-        Returns:
-        -----------
-            DataSet: A DataSet object containing the data from the DataFrame.
-        """
-        records = df.to_dict(orient='records')
-        ds = DataSet(records)
+    #     Returns:
+    #     -----------
+    #         DataSet: A DataSet object containing the data from the DataFrame.
+    #     """
+    #     records = df.to_dict(orient='records')
+    #     ds = DataSet(records)
 
-        # set index if its named
-        if df.index.name:
-            ds._index_name = df.index.name
-            ds._index = df.index.tolist()
+    #     # set index if its named
+    #     if df.index.name:
+    #         ds._index_name = df.index.name
+    #         ds._index = df.index.tolist()
 
-        return ds
+    #     return ds
 
 
     @staticmethod
@@ -128,29 +132,62 @@ class Atrax:
         return DataSet(rows)
     
     @staticmethod
-    def read_sql(query: str, conn, index_col=None) -> "DataSet":
+    def get_db(conn_str:str):
         """
-        Read SQL query into an Atrax DataSet.
+        Get a database connection object from a connection string.
 
         Parameters:
-            query (str): SQL query to execute
-            conn: Database connection (sqlite3 or psycopg2 or SQLAlchemy)
-            index_col (str): Optional column to use as index
+            conn_str (str): Connection string for the database
 
         Returns:
-            DataSet
+            Database connection object
         """
-        import pandas as pd
+        return create_engine(conn_str, echo=True)
+    
+    @staticmethod
+    def read_sql(query: str, conn: Union[Engine, sqlite3.Connection, psycopg2.extensions.connection], index_col=None) -> "DataSet":
+        """
+        Execute SQL and convert result to Atrax DataSet, without using pandas.
 
+        Parameters:
+        -----------
+        query : str
+            SQL query to run.
+        conn : SQLAlchemy engine/connection, sqlite3, or psycopg2 connection.
+        index_col : str, optional
+            Optional column to set as index.
+
+        Returns:
+        --------
+        DataSet
+        """
         try:
-            # Use pandas for broad compatibility
-            df = pd.read_sql_query(query, conn)
+            # Handle SQLAlchemy connection
+            if isinstance(conn, (Engine)):
+                with conn.connect() as connection:
+                    result = connection.execute(text(query))
+                    columns = result.keys()
+                    rows = result.fetchall()
 
-            # If index_col is provided, move it to index
-            if index_col and index_col in df.columns:
-                df.set_index(index_col, inplace=True)
+            # Handle sqlite3 and psycopg2
+            else:
+                cursor = conn.cursor()
+                cursor.execute(query)
+                columns = [desc[0] for desc in cursor.description]
+                rows = cursor.fetchall()
 
-            return Atrax.read_pandas(df)
+            # Convert rows into columns
+            data = {col: [] for col in columns}
+            for row in rows:
+                for col, val in zip(columns, row):
+                    data[col].append(val)
+
+            # Set index if requested
+            if index_col and index_col in data:
+                index = data.pop(index_col)
+                return DataSet(data, index=index_col, index_values=index)
+            else:
+                return DataSet(data)
 
         except Exception as e:
             raise RuntimeError(f"Failed to execute query: {e}")
