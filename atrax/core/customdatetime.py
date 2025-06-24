@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from typing import List, Union, Optional, Literal
-from .series import Series
 
 def to_datetime(values: Union[str, List[str]], fmt: str = None) -> Union[datetime, List[datetime]]:
     """Convert a string or list of strings to datetime objects.
@@ -35,7 +34,7 @@ def to_datetime(values: Union[str, List[str]], fmt: str = None) -> Union[datetim
     elif isinstance(values, Series):
         return [parse_single(val) for val in values]
     else:
-        raise TypeError("Input must be a string or a list of strings.")
+        raise TypeError(f"Input must be a string or a list of strings. found type: {type(values)}")
     
 def date_range(
         start: Union[str, datetime],
@@ -94,3 +93,53 @@ def date_range(
         return [start_dt + i * delta for i in range(periods)]
     else:
         raise ValueError("Either 'end' or 'periods' must be specified.")
+    
+def try_parse_date(d):
+    formats = ['%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%b %d, %Y', '%d %b %Y']
+    for fmt in formats:
+        try:
+            return datetime.strptime(d, fmt)
+        except ValueError:
+            continue
+    raise ValueError(f"Cannot parse date: {d}. Supported formats are: {formats}")
+
+class _DateTimeAccessor:
+    def __init__(self, series):
+        self.series = series
+
+    def _convert(self, d):
+        if isinstance(d, str):
+            date = try_parse_date(d)
+            return date.weekday()
+        elif isinstance(d, datetime):
+            return d.weekday()
+        else:
+            raise TypeError(f"Unsupported type for date: {type(d)}")        
+
+    @property
+    def weekday(self):
+        """
+        Get the weekday of each date in the Series.
+        
+        Returns:
+        Series: A new Series with the weekday (0=Monday, 6=Sunday).
+        """
+        from .series import Series
+
+        return Series([self._convert(d) for d in self.series.data], 
+                      name=f"{self.series.name}_weekday", 
+                      index=self.series.index) 
+
+    @property
+    def is_weekend(self):
+        """
+        Check if each date in the Series is a weekend (Saturday or Sunday).
+        
+        Returns:
+        Series: A new Series with int values indicating if the date is a weekend (1=yes, 0=no).
+        """
+        from .series import Series
+
+        return Series([self._convert(d) >= 5 for d in self.series.data], 
+                      name=f"{self.series.name}_is_weekend", 
+                      index=self.series.index) 

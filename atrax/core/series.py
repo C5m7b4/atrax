@@ -1,5 +1,8 @@
 from datetime import datetime
 from .rolling import RollingSeries
+from .locators import _Iloc, _Loc
+from .customdatetime import _DateTimeAccessor
+
 
 class Series:
 
@@ -10,6 +13,10 @@ class Series:
     @property
     def loc(self):
         return _Loc(self)
+    
+    @property
+    def dt(self):
+        return _DateTimeAccessor(self)
     
 
 
@@ -47,6 +54,12 @@ class Series:
             return "int"
         elif all(isinstance(x, (int, float)) for x in self.data):
             return "float"
+        elif all(isinstance(x, bool) for x in self.data):
+            return "bool"
+        elif all(isinstance(x, datetime) for x in self.data):
+            return "datetime"
+        elif all(isinstance(x, str) for x in self.data):
+            return "str"
         else:
             return "object"
 
@@ -448,32 +461,6 @@ class Series:
             return self.quantile([x/100 for x in p])
         return self.quantile(p/100)
 
+      
+     
     
-    
-
-
-class _Iloc:
-    def __init__(self, series):
-        self.series = series
-
-    def __getitem__(self, i):
-        if isinstance(i, slice):
-            return Series(self.series.data[i], name=self.series.name, index=self.series.index[i])
-        return self.series.data[i]
-    
-
-
-class _Loc:
-    def __init__(self, series):
-        self.series = series
-
-    def __getitem__(self, key):
-        if isinstance(key, list):
-            index_map = {k:v for k, v in zip(self.series.index, self.series.data)}
-            return Series([index_map[k] for k in key], name=self.series.name, index=key)
-        elif isinstance(key, slice):
-            raise NotImplementedError("Slicing by label is not implemented yet.")
-        else:
-            # single label lookup
-            idx = self.series.index.index(key)
-            return self.series.data[idx] 
