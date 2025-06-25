@@ -1,6 +1,19 @@
 
 ## Series functions
 class _Iloc:
+    """This class provides integer-location based indexing for a Series object.
+    It allows for both single item access and slicing operations.
+
+    Example usage:
+    >>> from atrax.core.series import Series
+    >>> s = Series([1, 2, 3], name='example', index=['a', 'b', 'c'])
+    >>> iloc = _Iloc(s)
+    >>> s
+    a    1
+    b    2
+    c    3
+    Name: example, dtype: int
+    """
     def __init__(self, series):
         self.series = series
 

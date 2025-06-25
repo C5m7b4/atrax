@@ -8,6 +8,25 @@ class Series:
 
     @property
     def iloc(self):
+        """
+        Provides integer-location based indexing for the Series.
+
+        Allows access to elements by their integer position, similar to how NumPy or pandas `iloc` works.
+
+        Examples:
+        >>> from atrax import Atrax as tx
+                 
+        >>> s = tx.Series([1, 2, 3], name='example', index=['a', 'b', 'c'])
+        >>> s.iloc[0]
+        1
+        >>> s.iloc[1:3]
+        b    2
+        c    3
+        Name: example, dtype: int
+
+
+        """
+       
         return _Iloc(self)
 
     @property
@@ -16,10 +35,13 @@ class Series:
     
     @property
     def dt(self):
+        """
+        Provides datetime-like properties for the Series."""
         return _DateTimeAccessor(self)
     
     @property
     def values(self):
+        """Returns the underlying data of the Series as a list."""
         return self.data
     
 
@@ -32,19 +54,54 @@ class Series:
         ----------
         data : list
             A list of values.
+
+
         name : str, optional
             The name of the series.
             defaults to None, which means no name is assigned.
 
         Examples
         --------
-        >>> from atrax import Atrax
-        >>> s = Atrax.Series([1, 2, 3, 4], name="numbers")
-        >>> print(s)
-        0: 1
-        1: 2
-        2: 3
-        3: 4
+        >>> from atrax import Atrax as tx
+
+        >>> s = tx.Series([1,2,3])
+        0     1
+        1     2
+        2     3
+        Name: , dtype: int
+
+        >>> s = tx.Series([1, 2, 3, 4, 5], name='numbers', index=['a', 'b', 'c'])
+        >>> s
+        a     1
+        b     2  
+        c     3
+        Name: numbers, dtype: int
+
+        >>> s = tx.Series([1.0, 2.0, 3.0], name='example', index=['a', 'b', 'c'])
+        a     1.0
+        b     2.0
+        c     3.0
+        Name: example, dtype: float
+
+        >>> s = tx.Series(['hello', 'goodbye', 'whatsup'])
+        0     hello
+        1     goodbye
+        2     whatsup
+        Name: , dtype: str
+
+        >>> s = tx.Series([1, True, 'sexy', 2.5])
+        0     1
+        1     True
+        2     sexy
+        3     2.5
+        Name: , dtype: object
+
+        ##### this one is interesting and probably needs attention
+        >>> s = tx.Series([True, False, True])
+        0    True
+        1    False
+        2    True
+        Name: , dtype: int        
         """
         self.data = data
         self.name = name or ""
@@ -147,6 +204,14 @@ class Series:
         n (int): The number of elements to return. Defaults to 5.
         Returns:
         Series: A new Series containing the first n elements.
+
+        Example usage:
+        >>> s = Series([1, 2, 3, 4, 5])
+        >>> print(s.head(3))
+        0    1
+        1    2
+        2    3
+        Name: , dtype: int
         """
         return Series(self.data[:n], name=self.name, index=self.index[:n])
     
