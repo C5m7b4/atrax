@@ -1,5 +1,7 @@
 # 🕷️ Atrax
 
+![logo](images/logo.png)
+
 Atrax is a lightweight, educational Python library for data manipulation, inspired by pandas. It's designed for developers, students, and data enthusiasts who want to learn, customize, or extend core DataFrame and Series functionality without the overhead of a full-scale framework.
 
 ### 🚀 What is Atrax?
@@ -53,4 +55,14 @@ python -m build
 to publish
 ```
 python -m twine upload dist/*
+```
+
+to build the docs
+```
+pdoc atrax --output-dir docs
+```
+
+to view the docs
+```
+docs/index.html
 ```

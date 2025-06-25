@@ -19,7 +19,12 @@ def to_datetime(values: Union[str, List[str]], fmt: str = None) -> Union[datetim
         else:
             # automatic fallback using fromisoformat or common formats
             try: 
-                return datetime.fromisoformat(val)
+                if isinstance(val,str):
+                    return datetime.fromisoformat(val)
+                elif isinstance(val, datetime):
+                    return val
+                else:
+                    return datetime(val)
             except ValueError:
                 for trial_fmt in ("%Y-%m-%d", "%m/%d/%Y", "%d-%M-%Y", "%Y/%m/%d"):
                     try:
