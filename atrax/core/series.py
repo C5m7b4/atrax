@@ -18,6 +18,10 @@ class Series:
     def dt(self):
         return _DateTimeAccessor(self)
     
+    @property
+    def values(self):
+        return self.data
+    
 
 
     def __init__(self, data, name=None, index=None):
