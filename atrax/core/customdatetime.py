@@ -12,6 +12,7 @@ def to_datetime(values: Union[str, List[str]], fmt: str = None) -> Union[datetim
         datetime | list[datetime]: A single datetime object if a string is provided,
                                     or a list of datetime objects if a list is provided.
     """
+    from .series import Series
     def parse_single(val: str) -> datetime:
         if fmt:
             return datetime.strptime(val, fmt)
@@ -107,14 +108,71 @@ class _DateTimeAccessor:
     def __init__(self, series):
         self.series = series
 
-    def _convert(self, d):
+    def _convert(self, d, mode='date'):
         if isinstance(d, str):
             date = try_parse_date(d)
-            return date.weekday()
+            if mode == 'date':
+                return date.weekday()
+            elif mode == 'day':
+                return date.day
+            elif mode == 'month':
+                return date.month
+            elif mode == 'year':
+                return date.year
+            
         elif isinstance(d, datetime):
-            return d.weekday()
+            if mode == 'date':
+                return d.weekday()
+            elif mode == 'day':
+                return d.day
+            elif mode == 'month':
+                return d.month
+            elif mode == 'year':
+                return d.year
         else:
-            raise TypeError(f"Unsupported type for date: {type(d)}")        
+            raise TypeError(f"Unsupported type for date: {type(d)}")   
+
+    @property
+    def day(self):
+        """
+        Get the day of the month for each date in the Series.
+        
+        Returns:
+        Series: A new Series with the day of the month.
+        """
+        from .series import Series
+
+        return Series([self._convert(d, mode='day') for d in self.series.data], 
+                      name=f"{self.series.name}_day", 
+                      index=self.series.index)
+
+    @property
+    def month(self):
+        """
+        Get the month for each date in the Series.
+        
+        Returns:
+        Series: A new Series with the month (1-12).
+        """
+        from .series import Series
+
+        return Series([self._convert(d, mode='month') for d in self.series.data], 
+                      name=f"{self.series.name}_month", 
+                      index=self.series.index)     
+    
+    @property
+    def year(self):
+        """
+        Get the year for each date in the Series.
+        
+        Returns:
+        Series: A new Series with the year.
+        """
+        from .series import Series
+
+        return Series([self._convert(d, mode='year') for d in self.series.data], 
+                      name=f"{self.series.name}_year", 
+                      index=self.series.index)
 
     @property
     def weekday(self):
