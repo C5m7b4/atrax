@@ -11,6 +11,15 @@ def to_datetime(values: Union[str, List[str]], fmt: str = None) -> Union[datetim
     Returns:
         datetime | list[datetime]: A single datetime object if a string is provided,
                                     or a list of datetime objects if a list is provided.
+
+    Example usage:
+    >>> tx.to_datetime("2023-10-01")
+    datetime.datetime(2023, 10, 1, 0, 0)
+
+    >>> tx.to_datetime(["2023-10-01", "2023-10-02"])
+    [datetime.datetime(2023, 10, 1, 0, 0), datetime.datetime(2023, 10, 2, 0, 0)]
+
+
     """
     from .series import Series
     def parse_single(val: str) -> datetime:
@@ -60,6 +69,16 @@ def date_range(
 
     Returns:
         list[datetime]: List of datetime objects.
+
+    Example usage:
+    >>> tx.date_range("2023-10-01", "2023-10-10", freq='D')
+    [datetime.datetime(2023, 10, 1, 0, 0), datetime.datetime(2023, 10, 2, 0, 0), ...]   
+
+    >>> tx.date_range("2023-10-01", periods=5, freq='D')
+    [datetime.datetime(2023, 10, 1, 0, 0), datetime.datetime(2023, 10, 2, 0, 0), ...]
+
+    
+
     """
     def parse_date(val):
         if isinstance(val, datetime):
@@ -101,6 +120,18 @@ def date_range(
         raise ValueError("Either 'end' or 'periods' must be specified.")
     
 def try_parse_date(d):
+    """Try to parse a date string into a datetime object using multiple formats.
+
+    Parameters:
+        d (str): The date string to parse.
+    
+    Returns:
+        datetime: The parsed datetime object.
+
+    Example usage:
+    >>> try_parse_date("2023-10-01")
+    datetime.datetime(2023, 10, 1, 0, 0)
+    """
     formats = ['%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%b %d, %Y', '%d %b %Y']
     for fmt in formats:
         try:

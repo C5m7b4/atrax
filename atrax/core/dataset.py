@@ -76,6 +76,19 @@ class DataSet:
         Parameters:
         -----------
             data: (list[dict] or dict[list]): Either row oriented or column oriented data.
+
+        Example usage:
+        >>> from atrax import Atrax as tx
+
+        >>> ds = tx.DataSet([{'col1': 1, 'col2': 2}, {'col1': 3, 'col2': 4}])
+        col1     col2
+        1        2
+        3        4
+
+        >>> ds = tx.DataSet({'col1': [1, 3], 'col2': [2, 4]})
+        >>> ds = DataSet([])  # empty dataset
+        >>> ds = DataSet({'col1': [1, 2], 'col2': [3, 4], 'col3': [5, 6]})
+        >>> ds = DataSet({'col1': [1, 2], 'col2': [3, 4], 'col3': [5, 6], 'col4': [7, 8]})
         """
         if isinstance(data, dict):
             lengths = [len(v) for v in data.values()]

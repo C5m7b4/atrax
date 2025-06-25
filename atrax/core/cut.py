@@ -20,6 +20,37 @@ def cut(values, bins=4, labels=None, precision=3, tie_breaker='upper'):
     -------
     binned_values : array-like
         The binned values.
+
+    Example usage:
+    >>> from atrax import Atrax as tx
+    >>> cut([1, 2, 3, 4, 5], bins=3)
+    [0, 0, 1, 2, 2]
+
+    >>> cut([1, 2, 3, 4, 5], bins=[0, 2, 4, 6], labels=['low', 'medium', 'high'])
+    ['low', 'medium', 'medium', 'high', 'high']
+
+    >>> cut([1, 2, 3, 4, 5], bins=3, precision=2, tie_breaker='lower')
+    [0, 0, 1, 2, 2]
+
+    >>> cut([1, 2, 3, 4, 5], bins=3, precision=2, tie_breaker='upper')
+    [0, 0, 1, 2, 2]
+
+    >>> ages = [19, 23, 37, 45, 50, 61, 70, 82]
+    >>> age_bins = [0, 20, 50, 100]
+    >>> age_labels = ['young', 'middle-ages', 'senior']
+    >>> cut(ages, bins=age_bins, labels=age_labels, tie_breaker='upper')
+    ['young', 'middle-ages', 'middle-ages', 'middle-ages', 'senior', 'senior', 'senior', 'senior]
+
+    >>> sales = [0, 20, 50, 75, 110, 130, 170, 200]
+    >>> binned_sales = cut(sales, bins=4)
+    >>> binned_sales
+    [0, 0, 1, 1, 2, 2, 3, 3]
+
+    >>> cholesterol = [120, 140, 160, 190, 210, 250]
+    >>> risk_bins = [0, 160, 20, 300]
+    >>> risk_labels = ['Low', 'Moderate', 'High']
+    >>> cut(cholesterol, bins=risk_bins, labels=risk_labels, tie_breaker='lower')
+    ['Low', 'Low', 'Low', 'High', 'High', 'High]
     """
     if not values:
         return []

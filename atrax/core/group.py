@@ -1,6 +1,13 @@
 
 
 class GroupBy:
+    """GroupBy class for aggregating data based on specified keys.
+    
+    This class allows you to group a dataset by one or more columns 
+    and perform aggregations such as sum, mean, count, min, max, 
+    first, and last.
+    
+    """
     def __init__(self, data, by):
         self.by = by if isinstance(by, list) else [by]
         self.data = data
@@ -99,6 +106,7 @@ class GroupBy:
         return DataSet(result)
 
     def sum(self):
+        """Calculate the sum of each group."""
         from .dataset import DataSet
         result = []
         for group_key, rows in self.groups.items():
@@ -113,6 +121,7 @@ class GroupBy:
         return DataSet(result)
 
     def mean(self):
+        """Calculate the mean of each group."""
         from .dataset import DataSet
         result = []
         for group_key, rows in self.groups.items():

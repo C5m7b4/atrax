@@ -28,12 +28,25 @@ class _Loc:
         self.series = series
 
     def __getitem__(self, key):
-        if isinstance(key, list):
-            from .series import Series
+        from .series import Series
+        if isinstance(key, list):            
             index_map = {k:v for k, v in zip(self.series.index, self.series.data)}
             return Series([index_map[k] for k in key], name=self.series.name, index=key)
         elif isinstance(key, slice):
-            raise NotImplementedError("Slicing by label is not implemented yet.")
+            start_label = key.start
+            end_label = key.stop
+
+            try:
+                start_idx = self.series.index.index(start_label)
+                end_idx = self.series.index.index(end_label)
+            except ValueError:
+                raise KeyError("Label not found in index")
+            
+            # +1 because label-based slicin is inclusive
+            data = self.series.data[start_idx:end_idx + 1]
+            index = self.series.index[start_idx:end_idx + 1]
+            return Series(data, name=self.series.name, index=index)
+
         else:
             # single label lookup
             idx = self.series.index.index(key)

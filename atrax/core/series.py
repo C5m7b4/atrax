@@ -19,10 +19,26 @@ class Series:
         >>> s = tx.Series([1, 2, 3], name='example', index=['a', 'b', 'c'])
         >>> s.iloc[0]
         1
+
         >>> s.iloc[1:3]
         b    2
         c    3
         Name: example, dtype: int
+
+        >>> s = tx.Series([1,2,3,4,5,],  name="numbers", index=['a', 'b', 'c', 'd', 'e'])
+        >>> s.iloc[1:4]
+        b    2
+        c    3
+        d    4
+        Name: numbers, dtype: int
+
+        >>> s.iloc[::-1]
+        e    5
+        d    4
+        c    3
+        b    2
+        a    1
+        Name: numbers, dtype: int
 
 
         """
@@ -31,19 +47,117 @@ class Series:
 
     @property
     def loc(self):
+        """Provides label-based indexing for the Series.
+        Allows access to elements by their labels, similar to how pandas `loc` works.
+        Examples:
+        >>> from atrax import Atrax as tx
+        >>> s = tx.Series([1, 2, 3], name='example', index=['a', 'b', 'c'])
+        >>> s.loc['a']
+        1
+    
+        >>> s.loc['b':'c']
+        b    2
+        c    3
+        Name: example, dtype: int
+        """
         return _Loc(self)
     
     @property
     def dt(self):
         """
-        Provides datetime-like properties for the Series."""
+        Provides datetime-like properties for the Series.
+        
+        Examples:
+        >>> from atrax import Atrax as tx
+        >>> test_data = [
+            {
+                'id': 1,
+                'sale_date': '1/1/2025'
+            },
+            {
+                'id': 2,
+                'sale_date': '1/2/2025'
+            },
+            {
+                'id': 3,
+                'sale_date': '1/3/2025'
+            }
+        ]
+        >>> ds = tx.DataSet(test_data)
+
+        >>> ds['weekday'] = ds['sale_date'].dt.weekday
+        >>> ds.head()
+        id    sale_date    weekday
+        1     1/1/2025     2
+        2     1/2/2025     3
+        3     1/3/2025     4
+
+
+        >>> ds['is_weekend'] = ds['sale_date'].dt.is_weekend
+        >>> ds.head()
+        id    sale_date    weekday   is_weekend
+        1     1/1/2025     2         False
+        2     1/2/2025     3         False
+        3     1/3/2025     4         False
+
+        >>> ds['month'] = ds['sale_date'].dt.month
+        >>> ds.head()
+        id    sale_date    weekday   is_weekend   month
+        1     1/1/2025     2         False        1
+        2     1/2/2025     3         False        1
+        3     1/3/2025     4         False        1
+
+        >>> ds['day'] = ds['sale_date'].dt.day
+        >>> ds.head()
+        id    sale_date    weekday   is_weekend   month  day
+        1     1/1/2025     2         False        1      1
+        2     1/2/2025     3         False        1      2
+        3     1/3/2025     4         False        1      3
+
+        >>> ds['year'] = ds['sale_date'].dt.year
+        >>> ds.head()
+        id    sale_date    weekday   is_weekend   month  day  year
+        1     1/1/2025     2         False        1      1    2025
+        2     1/2/2025     3         False        1      2    2025
+        3     1/3/2025     4         False        1      3    2025  
+
+
+        """
         return _DateTimeAccessor(self)
     
     @property
     def values(self):
-        """Returns the underlying data of the Series as a list."""
+        """Returns the underlying data of the Series as a list.
+        
+        Examples:
+        >>> from atrax import Atrax as tx
+        >>> s = tx.Series([1, 2, 3], name='example', index=['a', 'b', 'c'])
+        >>> s.values
+        [1, 2, 3]
+        
+        >>> type(s.values)
+        list"""
         return self.data
-    
+
+    @property
+    def name(self):
+        """Returns the name of the Series.
+
+        Examples:
+        >>> from atrax import Atrax as tx
+        >>> s = tx.Series([1, 2, 3], name='example', index=['a', 'b', 'c'])
+        >>> s.name
+        'example'
+
+        >>> s = tx.Series([1, 2, 3])
+        >>> s.name
+        ''
+        """
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value    
 
 
     def __init__(self, data, name=None, index=None):
@@ -200,13 +314,16 @@ class Series:
     def head(self, n=5):
         """
         Return the first n elements of the Series.
+
         Parameters:
         n (int): The number of elements to return. Defaults to 5.
+
+
         Returns:
         Series: A new Series containing the first n elements.
 
         Example usage:
-        >>> s = Series([1, 2, 3, 4, 5])
+        >>> s = tx.Series([1, 2, 3, 4, 5])
         >>> print(s.head(3))
         0    1
         1    2
@@ -218,18 +335,39 @@ class Series:
     def tail(self, n=5):
         """
         Return the last n elements of the Series.
+
         Parameters:
         n (int): The number of elements to return. Defaults to 5.
+
         Returns:
         Series: A new Series containing the last n elements.
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 3, 4, 5])
+        >>> print(s.tail(3))
+        2    3
+        3    4 
+        4    5 
         """
         return Series(self.data[-n:], name=self.name, index=self.index[-n:])
     
     def unique(self):
         """
         Return the unique values in the Series.
+
         Returns:
         Series: A new Series containing the unique values.
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 2, 3, 4, 4])
+        >>> unique_s = s.unique()
+        >>> print(unique_s)
+        0    1
+        1    2
+        2    3
+        3    4
+        Name: Unique(), dtype: int
+
         """
         unique_data = list(set(self.data))
         return Series(unique_data, name=f"Unique({self.name})", index=list(range(len(unique_data))))
@@ -237,30 +375,67 @@ class Series:
     def nunique(self):
         """
         Return the number of unique values in the Series.
+
         Returns:
         int: The number of unique values.
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 2, 3, 4, 4])
+        >>> num_unique = s.nunique()
+        >>> print(num_unique)
+        4
+
         """
         return len(set(self.data))
     
     def isin(self, values):
         """
         Check if each element in the Series is in the provided list of values.
+
         Parameters:
         values (list): A list of values to check against.
+
         Returns:
         Series: A new Series containing boolean values indicating membership.
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 3, 4, 5])
+        >>> values = [2, 4, 6]
+        >>> result = s.isin(values)
+        >>> print(result)
+        0     False
+        1     True
+        2     False
+        3     True
+        4     False
+        Name: IsIn(), dtype: int
         """
         return Series([x in values for x in self.data], name=f"IsIn({self.name})", index=self.index)
     
     def between(self, left, right, inclusive=True):
         """
         Check if each element in the Series is between two values.
+
         Parameters:
         left (int/float): The lower bound.
+
         right (int/float): The upper bound.
+
         inclusive (bool): Whether to include the bounds. Defaults to True.
+
         Returns:
         Series: A new Series containing boolean values indicating if each element is between the bounds.
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 3, 4, 5])
+        >>> result = s.between(2, 4)
+        >>> print(result)
+        0     False
+        1     True
+        2     True
+        3     True
+        4     False
+        Name: Between(, 2, 4), dtype: int
         """
         if inclusive:
             return Series([left <= x <= right for x in self.data], name=f"Between({self.name}, {left}, {right})")
@@ -270,12 +445,47 @@ class Series:
     def to_list(self):
         """
         Convert the Series to a list.
+
         Returns:
         list: The data in the Series as a list.
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 3])
+        >>> lst = s.to_list()
+        >>> print(lst)
+        [1, 2, 3]
+
         """
         return self.data
     
     def apply(self, func):
+        """Apply a function to each element in the Series.
+        
+        Parameters:
+        func (function): A function to apply to each element.   
+        
+        Returns:
+        Series: A new Series with the function applied to each element.
+        
+        Example usage:
+        >>> s = tx.Series([1, 2, 3])
+        >>> result = s.apply(lambda x: x * 2)
+        >>> print(result)
+        0    2
+        1    4
+        2    6
+        Name: , dtype: int
+        
+        >>> def square(x):
+        >>>     return x** 2
+            
+        >>> result = s.apply(square)   
+        >>> result
+        0    1
+        1    4  
+        2    9
+        Name: , dtype: int
+        """
         return Series([func(x) for x in self.data], name=self.name)
     
     
@@ -298,13 +508,26 @@ class Series:
     def to_datetime(self, format='%Y-%m-%d', errors='raise'):
         """
         Convert the Series to datetime objects.
+
+        I think we need to look at the other to_datetime function as I think it is more robust.
         
         Parameters:
+
         format (str): The format of the date strings. Defaults to '%m/%d/%Y'.
+
         errors (str): 'raise' to throw errors, 'coerce' to return None on failure
         
         Returns:
         Series: A new Series with datetime objects.
+
+        Example usage:
+        >>> s = tx.Series(['2025-01-01', '2025-01-02', '2025-01-03'])
+        >>> dt_series = s.to_datetime(format='%Y-%m-%d', errors='coerce')
+        >>> print(dt_series)
+        0    2025-01-01 00:00:00
+        1    2025-01-02 00:00:00
+        2    2025-01-03 00:00:00
+        Name: , dtype: datetime
         """
         converted = []
 
@@ -331,10 +554,37 @@ class Series:
         Convert the Series to a specified data type.
         
         Parameters:
+
         dtype (type): The Python type to cast to (e.g., int, float, str)
         
         Returns:
+
         Series: A new Series with the converted data type.
+
+        Example usage:
+        >>> s = tx.Series(['1', '2', '3'])
+        >>> i_series = s.astype(int)
+        >>> i_series
+        0    1
+        1    2
+        2    3
+        Name: , dtype: int
+
+        >>> s = tx.Series(['1', '2', '3'])
+        >>> i_series = s.astype('int')
+        >>> i_series
+        0    1
+        1    2
+        2    3
+        Name: , dtype: int       
+
+        >>> s = tx.Series(['1', '2', '3'])
+        >>> f_series = s.astype('float')
+        >>> f_series
+        0    1.0
+        1    2.0
+        2    3.0
+        Name: , dtype: float           
         """
         type_map = {
             "int": int,
@@ -364,10 +614,25 @@ class Series:
         Create a rolling window object for the Series.
         
         Parameters:
+
         window (int): The size of the rolling window.
         
         Returns:
+
         RollingSeries: A RollingSeries object for performing rolling operations.
+        
+        
+        Example usage:
+        >>> s = tx.Series([1, 2, 3, 4, 5])
+        >>> rolling_s = s.rolling(window=3)
+        >>> rolling_s.mean()
+        0    None
+        1    None
+        2    2.0
+        3    3.0
+        4    4.0
+        Name: rolling_series_rolling_mean, dtype: object
+        
         """
         if not isinstance(window, int) or window <= 0:
             raise ValueError("Window size must be a positive integer.")
@@ -378,13 +643,35 @@ class Series:
         Bin the Series into discrete intervals.
         
         Parameters:
+
         bins (int): Number of bins to create. Defaults to 4.
+
         labels (list): Optional labels for the bins. If None, default labels will be used.
+        
         precision (int): Number of decimal places for bin edges. Defaults to 3.
+        
         tie_breaker (str): How to handle ties ('upper', 'lower', 'random'). Defaults to 'upper'.
         
         Returns:
+
         Series: A new Series with binned data.
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        >>> binned_s = s.cut(bins=3, labels=['Low', 'Medium', 'High'])
+        >>> print(binned_s)
+        0      Low
+        1      Low
+        2      Low
+        3      Medium
+        4      Medium
+        5      Medium
+        6      High
+        7      High
+        8      High
+        9      High
+        Name: dtype: str
+
         """
         if not self.data:
             return Series([], name=self.name, index=self.index)
@@ -424,11 +711,65 @@ class Series:
         Compute numerical data ranks (1 through n) along the Series.
         
         Parameters:
+
         - method: {'average', 'min', 'max', 'first', 'dense'}, default 'average'
+        
         - ascending: boolean, default True
         
         Returns:
+
         Series: A new Series with ranked values.
+
+        Example usage:
+        >>> s = tx.Series([3, 1, 2, 2, 4])
+        >>> ranked_s = s.rank(method='average', ascending=True)
+        >>> print(ranked_s)
+        0    4.0
+        1    1.0
+        2    2.5
+        3    2.5
+        4    5.0
+        Name: , dtype: float
+
+        >>> s = tx.Series([3, 1, 2, 2, 4])
+        >>> ranked_s = s.rank(method='min', ascending=True)
+        >>> print(ranked_s)
+        0    4
+        1    1
+        2    2
+        3    2
+        4    5
+        Name: , dtype: int    
+
+        >>> s = tx.Series([3, 1, 2, 2, 4])
+        >>> ranked_s = s.rank(method='max', ascending=True)
+        >>> print(ranked_s)
+        0    4
+        1    1
+        2    3
+        3    3
+        4    5
+        Name: , dtype: int  
+
+        >>> s = tx.Series([3, 1, 2, 2, 4])
+        >>> ranked_s = s.rank(method='first', ascending=True)
+        >>> print(ranked_s)
+        0    4
+        1    1
+        2    2
+        3    3
+        4    5
+        Name: , dtype: int   
+
+        >>> s = tx.Series([3, 1, 2, 2, 4])
+        >>> ranked_s = s.rank(method='dense', ascending=True)
+        >>> print(ranked_s)
+        0    3
+        1    1
+        2    2
+        3    2
+        4    4
+        Name: , dtype: int                           
         """
         values = self.data
         indexed = list(enumerate(values))
@@ -482,10 +823,22 @@ class Series:
         Map values of the Series using an input mapping or function.
         
         Parameters:
+
         arg (dict or function): A mapping dictionary or a function to apply to each value.
         
         Returns:
+
         Series: A new Series with mapped values.
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 3], name='example', index=['a', 'b', 'c'])
+        >>> mapping = {1: 'one', 2: 'two', 3: 'three'}
+        >>> mapped_s = s.map(mapping)
+        >>> print(mapped_s)
+        a    one
+        b    two
+        c    three
+        Name: example_mapped, dtype: str
         """
         if callable(arg):
             mapped = [arg(x) for x in self.data]
@@ -500,10 +853,29 @@ class Series:
         Compute the q-th quantile of the Series.
         
         Parameters:
+
         q (float): The quantile to compute (0 <= q <= 1).
         
         Returns:
+
         float: The q-th quantile value.
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 3, 4, 5])
+        >>> q_value = s.quantile(0.5)
+        >>> print(q_value)
+        3.0
+
+        >>> s = tx.Series([1, 2, 3, 4, 5])
+        >>> q_value = s.quantile(0.25)
+        >>> print(q_value)
+        2.0       
+
+       >>> s = tx.Series([1, 2, 3, 4, 5])
+        >>> q_value = s.quantile(0.75)
+        >>> print(q_value)
+        4.0           
+
         """
         if not self.data:
             return None if isinstance(q, float) else [None for _ in q]
@@ -525,7 +897,22 @@ class Series:
         return compute_single_quantile(q)
     
     def percentile(self, p):
-        """ Equivalent to quantile"""
+        """ Equivalent to quantile
+        
+        Compute the p-th percentile of the Series.
+        
+        Parameters:
+        p (float or list): The percentile to compute (0 <= p <= 100).
+        
+        Returns:
+        float or list: The p-th percentile value(s).
+        
+        Example usage:
+        >>> s = tx.Series([1, 2, 3, 4, 5])
+        >>> p_value = s.percentile(50)
+        >>> print(p_value)
+        3.0
+        """
         if isinstance(p, list):
             return self.quantile([x/100 for x in p])
         return self.quantile(p/100)

@@ -76,40 +76,71 @@
 </span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a><span class="sd">    -------</span>
 </span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a><span class="sd">    binned_values : array-like</span>
 </span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a><span class="sd">        The binned values.</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="p">:</span>
-</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a>        <span class="k">return</span> <span class="p">[]</span>
-</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a>    
-</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a>    <span class="n">clean_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
-</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>    <span class="n">min_val</span><span class="p">,</span> <span class="n">max_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">clean_values</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">clean_values</span><span class="p">)</span>
-</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a>
-</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>        <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_val</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">)</span> <span class="o">/</span> <span class="n">bins</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>        <span class="n">bin_edges</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">min_val</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">step</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bins</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a>        <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">bins</span>
-</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a>
-</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a>    <span class="c1"># bin assignment</span>
-</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">assign_bin</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
-</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a>        <span class="k">if</span> <span class="n">tie_breaker</span> <span class="o">==</span> <span class="s1">&#39;lower&#39;</span> <span class="ow">and</span> <span class="n">val</span> <span class="o">==</span> <span class="n">bin_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a>            <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="mi">0</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a>        
-</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a>        
-</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a>            <span class="n">left</span> <span class="o">=</span> <span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a>            <span class="n">right</span> <span class="o">=</span> <span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a>            <span class="k">if</span> <span class="n">tie_breaker</span> <span class="o">==</span> <span class="s1">&#39;upper&#39;</span><span class="p">:</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a>                <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;=</span> <span class="n">val</span> <span class="o">&lt;</span> <span class="n">right</span><span class="p">:</span>
-</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a>                    <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="n">i</span>
-</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>            <span class="k">else</span><span class="p">:</span> <span class="c1"># lower</span>
-</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a>                <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;</span> <span class="n">val</span> <span class="o">&lt;=</span> <span class="n">right</span><span class="p">:</span>
-</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a>                    <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="n">i</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a>                
-</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a>        <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="n">bin_edges</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
-</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a>            <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
-</span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a>        <span class="k">return</span> <span class="kc">None</span>
-</span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a>    
-</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a>    <span class="k">return</span> <span class="p">[</span><span class="n">assign_bin</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a>
+</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a><span class="sd">    Example usage:</span>
+</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a><span class="sd">    &gt;&gt;&gt; from atrax import Atrax as tx</span>
+</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a><span class="sd">    &gt;&gt;&gt; cut([1, 2, 3, 4, 5], bins=3)</span>
+</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a><span class="sd">    [0, 0, 1, 2, 2]</span>
+</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>
+</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a><span class="sd">    &gt;&gt;&gt; cut([1, 2, 3, 4, 5], bins=[0, 2, 4, 6], labels=[&#39;low&#39;, &#39;medium&#39;, &#39;high&#39;])</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a><span class="sd">    [&#39;low&#39;, &#39;medium&#39;, &#39;medium&#39;, &#39;high&#39;, &#39;high&#39;]</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>
+</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a><span class="sd">    &gt;&gt;&gt; cut([1, 2, 3, 4, 5], bins=3, precision=2, tie_breaker=&#39;lower&#39;)</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a><span class="sd">    [0, 0, 1, 2, 2]</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a>
+</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a><span class="sd">    &gt;&gt;&gt; cut([1, 2, 3, 4, 5], bins=3, precision=2, tie_breaker=&#39;upper&#39;)</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a><span class="sd">    [0, 0, 1, 2, 2]</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a>
+</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a><span class="sd">    &gt;&gt;&gt; ages = [19, 23, 37, 45, 50, 61, 70, 82]</span>
+</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a><span class="sd">    &gt;&gt;&gt; age_bins = [0, 20, 50, 100]</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a><span class="sd">    &gt;&gt;&gt; age_labels = [&#39;young&#39;, &#39;middle-ages&#39;, &#39;senior&#39;]</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a><span class="sd">    &gt;&gt;&gt; cut(ages, bins=age_bins, labels=age_labels, tie_breaker=&#39;upper&#39;)</span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a><span class="sd">    [&#39;young&#39;, &#39;middle-ages&#39;, &#39;middle-ages&#39;, &#39;middle-ages&#39;, &#39;senior&#39;, &#39;senior&#39;, &#39;senior&#39;, &#39;senior]</span>
+</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a>
+</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a><span class="sd">    &gt;&gt;&gt; sales = [0, 20, 50, 75, 110, 130, 170, 200]</span>
+</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a><span class="sd">    &gt;&gt;&gt; binned_sales = cut(sales, bins=4)</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a><span class="sd">    &gt;&gt;&gt; binned_sales</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a><span class="sd">    [0, 0, 1, 1, 2, 2, 3, 3]</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>
+</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a><span class="sd">    &gt;&gt;&gt; cholesterol = [120, 140, 160, 190, 210, 250]</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a><span class="sd">    &gt;&gt;&gt; risk_bins = [0, 160, 20, 300]</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a><span class="sd">    &gt;&gt;&gt; risk_labels = [&#39;Low&#39;, &#39;Moderate&#39;, &#39;High&#39;]</span>
+</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a><span class="sd">    &gt;&gt;&gt; cut(cholesterol, bins=risk_bins, labels=risk_labels, tie_breaker=&#39;lower&#39;)</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a><span class="sd">    [&#39;Low&#39;, &#39;Low&#39;, &#39;Low&#39;, &#39;High&#39;, &#39;High&#39;, &#39;High]</span>
+</span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="p">:</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a>        <span class="k">return</span> <span class="p">[]</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos">57</span></a>    
+</span><span id="L-58"><a href="#L-58"><span class="linenos">58</span></a>    <span class="n">clean_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+</span><span id="L-59"><a href="#L-59"><span class="linenos">59</span></a>    <span class="n">min_val</span><span class="p">,</span> <span class="n">max_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">clean_values</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">clean_values</span><span class="p">)</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos">60</span></a>
+</span><span id="L-61"><a href="#L-61"><span class="linenos">61</span></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+</span><span id="L-62"><a href="#L-62"><span class="linenos">62</span></a>        <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_val</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">)</span> <span class="o">/</span> <span class="n">bins</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos">63</span></a>        <span class="n">bin_edges</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">min_val</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">step</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bins</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos">64</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="L-65"><a href="#L-65"><span class="linenos">65</span></a>        <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">bins</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos">66</span></a>
+</span><span id="L-67"><a href="#L-67"><span class="linenos">67</span></a>    <span class="c1"># bin assignment</span>
+</span><span id="L-68"><a href="#L-68"><span class="linenos">68</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">assign_bin</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+</span><span id="L-69"><a href="#L-69"><span class="linenos">69</span></a>        <span class="k">if</span> <span class="n">tie_breaker</span> <span class="o">==</span> <span class="s1">&#39;lower&#39;</span> <span class="ow">and</span> <span class="n">val</span> <span class="o">==</span> <span class="n">bin_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+</span><span id="L-70"><a href="#L-70"><span class="linenos">70</span></a>            <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="mi">0</span>
+</span><span id="L-71"><a href="#L-71"><span class="linenos">71</span></a>        
+</span><span id="L-72"><a href="#L-72"><span class="linenos">72</span></a>        
+</span><span id="L-73"><a href="#L-73"><span class="linenos">73</span></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+</span><span id="L-74"><a href="#L-74"><span class="linenos">74</span></a>            <span class="n">left</span> <span class="o">=</span> <span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</span><span id="L-75"><a href="#L-75"><span class="linenos">75</span></a>            <span class="n">right</span> <span class="o">=</span> <span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+</span><span id="L-76"><a href="#L-76"><span class="linenos">76</span></a>            <span class="k">if</span> <span class="n">tie_breaker</span> <span class="o">==</span> <span class="s1">&#39;upper&#39;</span><span class="p">:</span>
+</span><span id="L-77"><a href="#L-77"><span class="linenos">77</span></a>                <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;=</span> <span class="n">val</span> <span class="o">&lt;</span> <span class="n">right</span><span class="p">:</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos">78</span></a>                    <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="n">i</span>
+</span><span id="L-79"><a href="#L-79"><span class="linenos">79</span></a>            <span class="k">else</span><span class="p">:</span> <span class="c1"># lower</span>
+</span><span id="L-80"><a href="#L-80"><span class="linenos">80</span></a>                <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;</span> <span class="n">val</span> <span class="o">&lt;=</span> <span class="n">right</span><span class="p">:</span>
+</span><span id="L-81"><a href="#L-81"><span class="linenos">81</span></a>                    <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="n">i</span>
+</span><span id="L-82"><a href="#L-82"><span class="linenos">82</span></a>                
+</span><span id="L-83"><a href="#L-83"><span class="linenos">83</span></a>        <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="n">bin_edges</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos">84</span></a>            <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
+</span><span id="L-85"><a href="#L-85"><span class="linenos">85</span></a>        <span class="k">return</span> <span class="kc">None</span>
+</span><span id="L-86"><a href="#L-86"><span class="linenos">86</span></a>    
+</span><span id="L-87"><a href="#L-87"><span class="linenos">87</span></a>    <span class="k">return</span> <span class="p">[</span><span class="n">assign_bin</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
 </span></pre></div>
 
 
@@ -147,40 +178,71 @@
 </span><span id="cut-21"><a href="#cut-21"><span class="linenos">21</span></a><span class="sd">    -------</span>
 </span><span id="cut-22"><a href="#cut-22"><span class="linenos">22</span></a><span class="sd">    binned_values : array-like</span>
 </span><span id="cut-23"><a href="#cut-23"><span class="linenos">23</span></a><span class="sd">        The binned values.</span>
-</span><span id="cut-24"><a href="#cut-24"><span class="linenos">24</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="cut-25"><a href="#cut-25"><span class="linenos">25</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="p">:</span>
-</span><span id="cut-26"><a href="#cut-26"><span class="linenos">26</span></a>        <span class="k">return</span> <span class="p">[]</span>
-</span><span id="cut-27"><a href="#cut-27"><span class="linenos">27</span></a>    
-</span><span id="cut-28"><a href="#cut-28"><span class="linenos">28</span></a>    <span class="n">clean_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
-</span><span id="cut-29"><a href="#cut-29"><span class="linenos">29</span></a>    <span class="n">min_val</span><span class="p">,</span> <span class="n">max_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">clean_values</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">clean_values</span><span class="p">)</span>
-</span><span id="cut-30"><a href="#cut-30"><span class="linenos">30</span></a>
-</span><span id="cut-31"><a href="#cut-31"><span class="linenos">31</span></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-</span><span id="cut-32"><a href="#cut-32"><span class="linenos">32</span></a>        <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_val</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">)</span> <span class="o">/</span> <span class="n">bins</span>
-</span><span id="cut-33"><a href="#cut-33"><span class="linenos">33</span></a>        <span class="n">bin_edges</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">min_val</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">step</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bins</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
-</span><span id="cut-34"><a href="#cut-34"><span class="linenos">34</span></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="cut-35"><a href="#cut-35"><span class="linenos">35</span></a>        <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">bins</span>
-</span><span id="cut-36"><a href="#cut-36"><span class="linenos">36</span></a>
-</span><span id="cut-37"><a href="#cut-37"><span class="linenos">37</span></a>    <span class="c1"># bin assignment</span>
-</span><span id="cut-38"><a href="#cut-38"><span class="linenos">38</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">assign_bin</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
-</span><span id="cut-39"><a href="#cut-39"><span class="linenos">39</span></a>        <span class="k">if</span> <span class="n">tie_breaker</span> <span class="o">==</span> <span class="s1">&#39;lower&#39;</span> <span class="ow">and</span> <span class="n">val</span> <span class="o">==</span> <span class="n">bin_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-</span><span id="cut-40"><a href="#cut-40"><span class="linenos">40</span></a>            <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="mi">0</span>
-</span><span id="cut-41"><a href="#cut-41"><span class="linenos">41</span></a>        
-</span><span id="cut-42"><a href="#cut-42"><span class="linenos">42</span></a>        
-</span><span id="cut-43"><a href="#cut-43"><span class="linenos">43</span></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-</span><span id="cut-44"><a href="#cut-44"><span class="linenos">44</span></a>            <span class="n">left</span> <span class="o">=</span> <span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-</span><span id="cut-45"><a href="#cut-45"><span class="linenos">45</span></a>            <span class="n">right</span> <span class="o">=</span> <span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-</span><span id="cut-46"><a href="#cut-46"><span class="linenos">46</span></a>            <span class="k">if</span> <span class="n">tie_breaker</span> <span class="o">==</span> <span class="s1">&#39;upper&#39;</span><span class="p">:</span>
-</span><span id="cut-47"><a href="#cut-47"><span class="linenos">47</span></a>                <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;=</span> <span class="n">val</span> <span class="o">&lt;</span> <span class="n">right</span><span class="p">:</span>
-</span><span id="cut-48"><a href="#cut-48"><span class="linenos">48</span></a>                    <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="n">i</span>
-</span><span id="cut-49"><a href="#cut-49"><span class="linenos">49</span></a>            <span class="k">else</span><span class="p">:</span> <span class="c1"># lower</span>
-</span><span id="cut-50"><a href="#cut-50"><span class="linenos">50</span></a>                <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;</span> <span class="n">val</span> <span class="o">&lt;=</span> <span class="n">right</span><span class="p">:</span>
-</span><span id="cut-51"><a href="#cut-51"><span class="linenos">51</span></a>                    <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="n">i</span>
-</span><span id="cut-52"><a href="#cut-52"><span class="linenos">52</span></a>                
-</span><span id="cut-53"><a href="#cut-53"><span class="linenos">53</span></a>        <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="n">bin_edges</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
-</span><span id="cut-54"><a href="#cut-54"><span class="linenos">54</span></a>            <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
-</span><span id="cut-55"><a href="#cut-55"><span class="linenos">55</span></a>        <span class="k">return</span> <span class="kc">None</span>
-</span><span id="cut-56"><a href="#cut-56"><span class="linenos">56</span></a>    
-</span><span id="cut-57"><a href="#cut-57"><span class="linenos">57</span></a>    <span class="k">return</span> <span class="p">[</span><span class="n">assign_bin</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+</span><span id="cut-24"><a href="#cut-24"><span class="linenos">24</span></a>
+</span><span id="cut-25"><a href="#cut-25"><span class="linenos">25</span></a><span class="sd">    Example usage:</span>
+</span><span id="cut-26"><a href="#cut-26"><span class="linenos">26</span></a><span class="sd">    &gt;&gt;&gt; from atrax import Atrax as tx</span>
+</span><span id="cut-27"><a href="#cut-27"><span class="linenos">27</span></a><span class="sd">    &gt;&gt;&gt; cut([1, 2, 3, 4, 5], bins=3)</span>
+</span><span id="cut-28"><a href="#cut-28"><span class="linenos">28</span></a><span class="sd">    [0, 0, 1, 2, 2]</span>
+</span><span id="cut-29"><a href="#cut-29"><span class="linenos">29</span></a>
+</span><span id="cut-30"><a href="#cut-30"><span class="linenos">30</span></a><span class="sd">    &gt;&gt;&gt; cut([1, 2, 3, 4, 5], bins=[0, 2, 4, 6], labels=[&#39;low&#39;, &#39;medium&#39;, &#39;high&#39;])</span>
+</span><span id="cut-31"><a href="#cut-31"><span class="linenos">31</span></a><span class="sd">    [&#39;low&#39;, &#39;medium&#39;, &#39;medium&#39;, &#39;high&#39;, &#39;high&#39;]</span>
+</span><span id="cut-32"><a href="#cut-32"><span class="linenos">32</span></a>
+</span><span id="cut-33"><a href="#cut-33"><span class="linenos">33</span></a><span class="sd">    &gt;&gt;&gt; cut([1, 2, 3, 4, 5], bins=3, precision=2, tie_breaker=&#39;lower&#39;)</span>
+</span><span id="cut-34"><a href="#cut-34"><span class="linenos">34</span></a><span class="sd">    [0, 0, 1, 2, 2]</span>
+</span><span id="cut-35"><a href="#cut-35"><span class="linenos">35</span></a>
+</span><span id="cut-36"><a href="#cut-36"><span class="linenos">36</span></a><span class="sd">    &gt;&gt;&gt; cut([1, 2, 3, 4, 5], bins=3, precision=2, tie_breaker=&#39;upper&#39;)</span>
+</span><span id="cut-37"><a href="#cut-37"><span class="linenos">37</span></a><span class="sd">    [0, 0, 1, 2, 2]</span>
+</span><span id="cut-38"><a href="#cut-38"><span class="linenos">38</span></a>
+</span><span id="cut-39"><a href="#cut-39"><span class="linenos">39</span></a><span class="sd">    &gt;&gt;&gt; ages = [19, 23, 37, 45, 50, 61, 70, 82]</span>
+</span><span id="cut-40"><a href="#cut-40"><span class="linenos">40</span></a><span class="sd">    &gt;&gt;&gt; age_bins = [0, 20, 50, 100]</span>
+</span><span id="cut-41"><a href="#cut-41"><span class="linenos">41</span></a><span class="sd">    &gt;&gt;&gt; age_labels = [&#39;young&#39;, &#39;middle-ages&#39;, &#39;senior&#39;]</span>
+</span><span id="cut-42"><a href="#cut-42"><span class="linenos">42</span></a><span class="sd">    &gt;&gt;&gt; cut(ages, bins=age_bins, labels=age_labels, tie_breaker=&#39;upper&#39;)</span>
+</span><span id="cut-43"><a href="#cut-43"><span class="linenos">43</span></a><span class="sd">    [&#39;young&#39;, &#39;middle-ages&#39;, &#39;middle-ages&#39;, &#39;middle-ages&#39;, &#39;senior&#39;, &#39;senior&#39;, &#39;senior&#39;, &#39;senior]</span>
+</span><span id="cut-44"><a href="#cut-44"><span class="linenos">44</span></a>
+</span><span id="cut-45"><a href="#cut-45"><span class="linenos">45</span></a><span class="sd">    &gt;&gt;&gt; sales = [0, 20, 50, 75, 110, 130, 170, 200]</span>
+</span><span id="cut-46"><a href="#cut-46"><span class="linenos">46</span></a><span class="sd">    &gt;&gt;&gt; binned_sales = cut(sales, bins=4)</span>
+</span><span id="cut-47"><a href="#cut-47"><span class="linenos">47</span></a><span class="sd">    &gt;&gt;&gt; binned_sales</span>
+</span><span id="cut-48"><a href="#cut-48"><span class="linenos">48</span></a><span class="sd">    [0, 0, 1, 1, 2, 2, 3, 3]</span>
+</span><span id="cut-49"><a href="#cut-49"><span class="linenos">49</span></a>
+</span><span id="cut-50"><a href="#cut-50"><span class="linenos">50</span></a><span class="sd">    &gt;&gt;&gt; cholesterol = [120, 140, 160, 190, 210, 250]</span>
+</span><span id="cut-51"><a href="#cut-51"><span class="linenos">51</span></a><span class="sd">    &gt;&gt;&gt; risk_bins = [0, 160, 20, 300]</span>
+</span><span id="cut-52"><a href="#cut-52"><span class="linenos">52</span></a><span class="sd">    &gt;&gt;&gt; risk_labels = [&#39;Low&#39;, &#39;Moderate&#39;, &#39;High&#39;]</span>
+</span><span id="cut-53"><a href="#cut-53"><span class="linenos">53</span></a><span class="sd">    &gt;&gt;&gt; cut(cholesterol, bins=risk_bins, labels=risk_labels, tie_breaker=&#39;lower&#39;)</span>
+</span><span id="cut-54"><a href="#cut-54"><span class="linenos">54</span></a><span class="sd">    [&#39;Low&#39;, &#39;Low&#39;, &#39;Low&#39;, &#39;High&#39;, &#39;High&#39;, &#39;High]</span>
+</span><span id="cut-55"><a href="#cut-55"><span class="linenos">55</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="cut-56"><a href="#cut-56"><span class="linenos">56</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="p">:</span>
+</span><span id="cut-57"><a href="#cut-57"><span class="linenos">57</span></a>        <span class="k">return</span> <span class="p">[]</span>
+</span><span id="cut-58"><a href="#cut-58"><span class="linenos">58</span></a>    
+</span><span id="cut-59"><a href="#cut-59"><span class="linenos">59</span></a>    <span class="n">clean_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+</span><span id="cut-60"><a href="#cut-60"><span class="linenos">60</span></a>    <span class="n">min_val</span><span class="p">,</span> <span class="n">max_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">clean_values</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">clean_values</span><span class="p">)</span>
+</span><span id="cut-61"><a href="#cut-61"><span class="linenos">61</span></a>
+</span><span id="cut-62"><a href="#cut-62"><span class="linenos">62</span></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+</span><span id="cut-63"><a href="#cut-63"><span class="linenos">63</span></a>        <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_val</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">)</span> <span class="o">/</span> <span class="n">bins</span>
+</span><span id="cut-64"><a href="#cut-64"><span class="linenos">64</span></a>        <span class="n">bin_edges</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">min_val</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">step</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bins</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+</span><span id="cut-65"><a href="#cut-65"><span class="linenos">65</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="cut-66"><a href="#cut-66"><span class="linenos">66</span></a>        <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">bins</span>
+</span><span id="cut-67"><a href="#cut-67"><span class="linenos">67</span></a>
+</span><span id="cut-68"><a href="#cut-68"><span class="linenos">68</span></a>    <span class="c1"># bin assignment</span>
+</span><span id="cut-69"><a href="#cut-69"><span class="linenos">69</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">assign_bin</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+</span><span id="cut-70"><a href="#cut-70"><span class="linenos">70</span></a>        <span class="k">if</span> <span class="n">tie_breaker</span> <span class="o">==</span> <span class="s1">&#39;lower&#39;</span> <span class="ow">and</span> <span class="n">val</span> <span class="o">==</span> <span class="n">bin_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+</span><span id="cut-71"><a href="#cut-71"><span class="linenos">71</span></a>            <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="mi">0</span>
+</span><span id="cut-72"><a href="#cut-72"><span class="linenos">72</span></a>        
+</span><span id="cut-73"><a href="#cut-73"><span class="linenos">73</span></a>        
+</span><span id="cut-74"><a href="#cut-74"><span class="linenos">74</span></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+</span><span id="cut-75"><a href="#cut-75"><span class="linenos">75</span></a>            <span class="n">left</span> <span class="o">=</span> <span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</span><span id="cut-76"><a href="#cut-76"><span class="linenos">76</span></a>            <span class="n">right</span> <span class="o">=</span> <span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+</span><span id="cut-77"><a href="#cut-77"><span class="linenos">77</span></a>            <span class="k">if</span> <span class="n">tie_breaker</span> <span class="o">==</span> <span class="s1">&#39;upper&#39;</span><span class="p">:</span>
+</span><span id="cut-78"><a href="#cut-78"><span class="linenos">78</span></a>                <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;=</span> <span class="n">val</span> <span class="o">&lt;</span> <span class="n">right</span><span class="p">:</span>
+</span><span id="cut-79"><a href="#cut-79"><span class="linenos">79</span></a>                    <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="n">i</span>
+</span><span id="cut-80"><a href="#cut-80"><span class="linenos">80</span></a>            <span class="k">else</span><span class="p">:</span> <span class="c1"># lower</span>
+</span><span id="cut-81"><a href="#cut-81"><span class="linenos">81</span></a>                <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;</span> <span class="n">val</span> <span class="o">&lt;=</span> <span class="n">right</span><span class="p">:</span>
+</span><span id="cut-82"><a href="#cut-82"><span class="linenos">82</span></a>                    <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="n">i</span>
+</span><span id="cut-83"><a href="#cut-83"><span class="linenos">83</span></a>                
+</span><span id="cut-84"><a href="#cut-84"><span class="linenos">84</span></a>        <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="n">bin_edges</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+</span><span id="cut-85"><a href="#cut-85"><span class="linenos">85</span></a>            <span class="k">return</span> <span class="n">labels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">labels</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
+</span><span id="cut-86"><a href="#cut-86"><span class="linenos">86</span></a>        <span class="k">return</span> <span class="kc">None</span>
+</span><span id="cut-87"><a href="#cut-87"><span class="linenos">87</span></a>    
+</span><span id="cut-88"><a href="#cut-88"><span class="linenos">88</span></a>    <span class="k">return</span> <span class="p">[</span><span class="n">assign_bin</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
 </span></pre></div>
 
 
@@ -204,6 +266,59 @@ tie_breaker : {'upper', 'lower'}, optional
 
 <p>binned_values : array-like
     The binned values.</p>
+
+<p>Example usage:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">atrax</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atrax</span> <span class="k">as</span> <span class="n">tx</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cut</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">[0, 0, 1, 2, 2]</span>
+</code></pre>
+</div>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">cut</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;low&#39;</span><span class="p">,</span> <span class="s1">&#39;medium&#39;</span><span class="p">,</span> <span class="s1">&#39;high&#39;</span><span class="p">])</span>
+<span class="go">[&#39;low&#39;, &#39;medium&#39;, &#39;medium&#39;, &#39;high&#39;, &#39;high&#39;]</span>
+</code></pre>
+</div>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">cut</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">tie_breaker</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">)</span>
+<span class="go">[0, 0, 1, 2, 2]</span>
+</code></pre>
+</div>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">cut</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">tie_breaker</span><span class="o">=</span><span class="s1">&#39;upper&#39;</span><span class="p">)</span>
+<span class="go">[0, 0, 1, 2, 2]</span>
+</code></pre>
+</div>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">ages</span> <span class="o">=</span> <span class="p">[</span><span class="mi">19</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">37</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">61</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">82</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">age_bins</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">age_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;young&#39;</span><span class="p">,</span> <span class="s1">&#39;middle-ages&#39;</span><span class="p">,</span> <span class="s1">&#39;senior&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cut</span><span class="p">(</span><span class="n">ages</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">age_bins</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">age_labels</span><span class="p">,</span> <span class="n">tie_breaker</span><span class="o">=</span><span class="s1">&#39;upper&#39;</span><span class="p">)</span>
+<span class="go">[&#39;young&#39;, &#39;middle-ages&#39;, &#39;middle-ages&#39;, &#39;middle-ages&#39;, &#39;senior&#39;, &#39;senior&#39;, &#39;senior&#39;, &#39;senior]</span>
+</code></pre>
+</div>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">sales</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">75</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">170</span><span class="p">,</span> <span class="mi">200</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binned_sales</span> <span class="o">=</span> <span class="n">cut</span><span class="p">(</span><span class="n">sales</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binned_sales</span>
+<span class="go">[0, 0, 1, 1, 2, 2, 3, 3]</span>
+</code></pre>
+</div>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">cholesterol</span> <span class="o">=</span> <span class="p">[</span><span class="mi">120</span><span class="p">,</span> <span class="mi">140</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">190</span><span class="p">,</span> <span class="mi">210</span><span class="p">,</span> <span class="mi">250</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">risk_bins</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">300</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">risk_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Low&#39;</span><span class="p">,</span> <span class="s1">&#39;Moderate&#39;</span><span class="p">,</span> <span class="s1">&#39;High&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cut</span><span class="p">(</span><span class="n">cholesterol</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">risk_bins</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">risk_labels</span><span class="p">,</span> <span class="n">tie_breaker</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">)</span>
+<span class="go">[&#39;Low&#39;, &#39;Low&#39;, &#39;Low&#39;, &#39;High&#39;, &#39;High&#39;, &#39;High]</span>
+</code></pre>
+</div>
 </div>
 
 
