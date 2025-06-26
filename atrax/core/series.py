@@ -1,4 +1,5 @@
 from datetime import datetime
+from collections import Counter
 from .rolling import RollingSeries
 from .locators import _Iloc, _Loc
 from .customdatetime import _DateTimeAccessor
@@ -218,11 +219,14 @@ class Series:
         Name: , dtype: int        
         """
         self.data = data
+        """Return the data as a list."""
         self.name = name or ""
         self.index = index or list(range(len(data)))
+        """Return the index as a list of labels. If no index is provided, it defaults to a range of integers."""
         if len(self.data) != len(self.index):
             raise ValueError("Length of index must match length of data.")
         self.dtype = self._infer_dtype()
+        """Return the data type of the Series based on the data provided."""
 
     def _infer_dtype(self):
         if all(isinstance(x, int) for x in self.data):
@@ -902,9 +906,11 @@ class Series:
         Compute the p-th percentile of the Series.
         
         Parameters:
+
         p (float or list): The percentile to compute (0 <= p <= 100).
         
         Returns:
+
         float or list: The p-th percentile value(s).
         
         Example usage:
@@ -916,7 +922,158 @@ class Series:
         if isinstance(p, list):
             return self.quantile([x/100 for x in p])
         return self.quantile(p/100)
+    
+    def mean(self):
+        """
+        Compute the mean of the Series.
+        
+        Returns:
 
+        float: The mean value of the Series.
+
+        Example usage:
+
+        >>> s = tx.Series([1, 2, 3, 4, 5])
+        >>> mean_value = s.mean()
+        >>> print(mean_value)
+        3.0
+        """
+        if not self.data:
+            return None
+        
+        values = [v for v in self.data if v is not None]
+        return sum(values) / len(values)
+    
+    def std(self, ddof=1):
+        """
+        Compute the standard deviation of the Series ignoring None.
+        
+        Parameters:
+
+        ddof (int): Delta degrees of freedom. Defaults to 1.
+            The divisor used in calculations is N - ddof, where N is the number of non-None element
+        
+        Returns:
+
+        float: The standard deviation of the Series.
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 3, 4, 5])
+        >>> s.std()
+        1.5811388300841898
+        """
+        if not self.data:
+            return None
+        
+        values = [v for v in self.data if v is not None]
+        n = len(values)
+        if n <= ddof:
+            return None
+        mean_val = sum(values) / n
+        variance = sum((x - mean_val) **2 for x in values) / (n - ddof)
+        return variance ** 0.5
+    
+    def var(self, ddof=1):
+        """
+        Compute the variance of the Series, ignoring None.
+
+        Parameters:
+
+            ddof (int): Delta Degrees of Freedom. The divisor used in 
+                        calculations is N - ddof, where N is the number of non-None elements.
+
+        Returns:
+
+            float: Variance of the values
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 3, 4, 5])
+        >>> var_value = s.var()
+        >>> print(var_value)
+        2.5
+        """
+        values = [v for v in self.data if v is not None]
+        n = len(values)
+        if n <= ddof:
+            return None
+        mean_val = sum(values) / n
+        return sum((x - mean_val) ** 2 for x in values) / (n - ddof)
+    
+    def median(self):
+        """
+        Compute the median of the Series, ignoring None.
+
+        Returns:
+
+            float: Median value
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 3, 4, 5])
+        >>> median_value = s.median()
+        >>> print(median_value)
+        3.0
+        """
+        values = sorted(v for v in self.data if v is not None)
+        n = len(values)
+        if n == 0:
+            return None
+        mid = n // 2
+        if n % 2 == 1:
+            return values[mid]
+        return (values[mid - 1] + values[mid]) / 2  
+
+    def mode(self):
+        """
+        Compute the mode(s) of the Series, ignoring None.
+
+        Returns:
+
+            list: List of the most common value(s)
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 2, 3, 4, 4, 4])
+        >>> mode_values = s.mode()
+        >>> print(mode_values)
+        4
+        """
+        values = [v for v in self.data if v is not None]
+        if not values:
+            return []
+        freq = Counter(values)
+        max_count = max(freq.values())
+        return min([val for val, count in freq.items() if count == max_count])
       
      
-    
+    def min(self):
+        """
+        Return the minimum value in the Series, ignoring None.
+
+        Returns:
+
+            float: Minimum value
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 3, None, 4, 5])
+        >>> min_value = s.min()
+        >>> print(min_value)
+        1
+        """
+        values = [v for v in self.data if v is not None]
+        return None if not values else min(values)
+
+    def max(self):
+        """
+        Return the maximum value in the Series, ignoring None.
+
+        Returns:
+
+            float: Maximum value
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 3, None, 4, 5])
+        >>> max_value = s.max()
+        >>> print(max_value)
+        5
+        """
+        values = [v for v in self.data if v is not None]
+        return None if not values else max(values)  

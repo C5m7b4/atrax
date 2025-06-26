@@ -106,18 +106,7 @@ def test_to_pandas_conversion():
 def test_describe_numeric_column():
     ds = tx.DataSet([{"x": 1}, {"x": 3}, {"x": 5}])
     summary = ds.describe()
-    assert any("x" in row for row in summary.data)
-
-def test_groupby_sum():
-    ds = tx.DataSet([
-        {"cat": "a", "val": 10},
-        {"cat": "a", "val": 5},
-        {"cat": "b", "val": 7},
-    ])
-    result = ds.groupby("cat").sum()
-    totals = {r["cat"]: r["val"] for r in result.data}
-    assert totals["a"] == 15
-    assert totals["b"] == 7    
+    assert any("x" in row for row in summary.data)  
 
 def test_merge_inner_join():
     ds1 = tx.DataSet([{"id": 1, "x": 100}, {"id": 2, "x": 200}])

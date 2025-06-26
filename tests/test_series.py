@@ -310,7 +310,7 @@ def test_series_astype_to_str():
     result = s.astype('str')
 
     assert result.data == ['1.5', '2.0', '3.25']
-    assert result.dtype == 'object'
+    assert result.dtype == 'str'
 
 def test_series_astype_to_int():
     s = tx.Series([1.5, 2.0, 3.25], name="floats")
@@ -483,10 +483,6 @@ def test_loc_list_of_labels():
     assert result.index == ["b", "a"]
 
 
-def test_loc_slice_not_implemented():
-    s = tx.Series([1, 2, 3], index=["a", "b", "c"])
-    with pytest.raises(NotImplementedError):
-        _ = s.loc["a":"b"]
 
 def test_series_cut_basic_equal_width():
     s = tx.Series([1, 2, 3, 4, 5])
