@@ -604,3 +604,16 @@ class DataSet:
                     result.append(merged)
         return DataSet(result)
     
+    def groupby(self, by):
+        """
+        Group the dataset by one or more columns.
+
+        Parameters:
+            by (str or list of str): Column(s) to group by.
+
+        Returns:
+            GroupBy: GroupBy object for aggregation.
+        """
+        from .group import GroupBy 
+        return GroupBy(self.data, by)
+    
