@@ -14,7 +14,6 @@ from .core.dataset import DataSet
 from .core.qcut import qcut
 from .core.cut import cut
 from .core.customdatetime import to_datetime, date_range
-from .core.metrics import SSE, MSE, RMSE, MAE, MAPE, SMAPE
 
 class Atrax:
     Series = Series
@@ -23,12 +22,6 @@ class Atrax:
     cut = cut
     to_datetime = to_datetime
     date_range = date_range
-    SSE = SSE
-    MSE = MSE
-    RMSE = RMSE
-    MAE = MAE
-    MAPE = MAPE
-    SMAPE = SMAPE
 
 
     @staticmethod

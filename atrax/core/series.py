@@ -228,6 +228,25 @@ class Series:
         self.dtype = self._infer_dtype()
         """Return the data type of the Series based on the data provided."""
 
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+        from numpy import ndarray
+        raw_inputs = []
+        for x in inputs:
+            if isinstance(x, Series):
+                raw_inputs.append(x.data)
+            else:
+                raw_inputs.append(x)
+
+        result = getattr(ufunc, method)(*raw_inputs, **kwargs)
+
+        if isinstance(result, tuple):
+            # for ufuncs that return multiple outputs, return tuple of series
+            return tuple(Series(r, name=self.name) if isinstance(r, ndarray) else r for r in result)
+        elif isinstance(result, ndarray):
+            return Series(result.tolist(), name=self.name)
+        else:
+            return result
+
     def _infer_dtype(self):
         if all(isinstance(x, int) for x in self.data):
             return "int"
@@ -297,6 +316,16 @@ class Series:
     def __floordiv__(self, other): return self._binary_op(other, lambda a, b: a // b)
     def __mod__(self, other): return self._binary_op(other, lambda a, b: a % b)
     def __pow__(self, other): return self._binary_op(other, lambda a, b: a ** b)
+
+    # reverse operator methods
+    def __radd__(self, other): return self._binary_op(other, lambda a, b: b + a)
+    def __rsub__(self, other): return self._binary_op(other, lambda a, b: b - a)
+    def __rmul__(self, other): return self._binary_op(other, lambda a, b: b * a)
+    def __rtruediv__(self, other): return self._binary_op(other, lambda a, b: b / a)
+    def __rfloordiv__(self, other): return self._binary_op(other, lambda a, b: b // a)
+    def __rmod__(self, other): return self._binary_op(other, lambda a, b: b % a)
+    def __rpow__(self, other): return self._binary_op(other, lambda a, b: b ** a)
+
 
     def __and__(self, other):
         if not isinstance(other, Series):
