@@ -70,4 +70,5 @@ pdoc atrax --output-dir docs
 to view the docs
 ```
 docs/index.html
+
 ```

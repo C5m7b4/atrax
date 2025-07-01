@@ -4,6 +4,7 @@ from .indexers import _iLocIndexer, _LocIndexer
 from atrax import Series
 from copy import deepcopy
 from collections.abc import Sequence
+from .group import GroupBy
 
 class Dataset:
 
@@ -478,5 +479,18 @@ class Dataset:
             return None
         else:
             return Dataset(new_data)
+        
+    def groupby(self, by, sort=False):
+        """
+            Group the dataset by one more columns.
+
+            Parameters:
+
+                by (str or list of str): Column(s) to group by
+
+            Returns:
+                GroupBy: GroupBy object for aggregation
+        """
+        return GroupBy(self.data, by, sort)
 
     
