@@ -9,19 +9,21 @@ from sqlalchemy import Engine, Connection, create_engine, text
 from .version import __version__
 
 
-from .core.series import Series
-from .core.dataset import DataSet
-from .core.qcut import qcut
-from .core.cut import cut
-from .core.customdatetime import to_datetime, date_range
+#from .core.series import Series
+from .Series.series import Series
+from .Dataset.dataset import Dataset
+#from .core.dataset import DataSet
+# from .core.qcut import qcut
+# from .core.cut import cut
+# from .core.customdatetime import to_datetime, date_range
 
 class Atrax:
     Series = Series
-    DataSet = DataSet
-    qcut = qcut
-    cut = cut
-    to_datetime = to_datetime
-    date_range = date_range
+    DataSet = Dataset
+    # qcut = qcut
+    # cut = cut
+    # to_datetime = to_datetime
+    # date_range = date_range
 
 
     @staticmethod
@@ -84,7 +86,7 @@ class Atrax:
 
             rows.append(parsed_row)
                 
-        return DataSet(rows)
+        return Dataset(rows)
     
     @staticmethod
     def get_db(conn_str:str):
@@ -140,9 +142,9 @@ class Atrax:
             # Set index if requested
             if index_col and index_col in data:
                 index = data.pop(index_col)
-                return DataSet(data, index=index_col, index_values=index)
+                return Dataset(data, index=index_col, index_values=index)
             else:
-                return DataSet(data)
+                return Dataset(data)
 
         except Exception as e:
             raise RuntimeError(f"Failed to execute query: {e}")
