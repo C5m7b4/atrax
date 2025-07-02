@@ -84,6 +84,20 @@ class _DateTimeAccessor:
         return Series([self._convert(d) for d in self.series.data], 
                       name=f"{self.series.name}_weekday", 
                       index=self.series.index) 
+    
+    @property
+    def dayofweek(self):
+        """
+        Get the dayofweek of each date in the Series.
+        
+        Returns:
+        Series: A new Series with the weekday (0=Monday, 6=Sunday).
+        """
+        from atrax.Series.series import Series
+
+        return Series([self._convert(d) for d in self.series.data], 
+                      name=f"{self.series.name}_dayofweek", 
+                      index=self.series.index)     
 
     @property
     def is_weekend(self):
