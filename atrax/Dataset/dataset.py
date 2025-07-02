@@ -1,7 +1,7 @@
 from datetime import datetime
 import statistics
 from .indexers import _iLocIndexer, _LocIndexer
-from atrax import Series
+from ..Series.series import Series
 from copy import deepcopy
 from collections.abc import Sequence
 from .group import GroupBy
@@ -97,14 +97,9 @@ class Dataset:
         download_link = f'''<a download="dataset.csv" href="data:text/csv;base64,{b64}" target="_blank"
             style="
                display: inline-block;
-               margin-bottom: 10px;
-               padding: 6px 12px;
-               background-color: #007acc;
                color: white;
                text-decoration: none;
-               border-radius: 5px;
                font-family: sans-serif;
-               font-size: 14px;
            "
         >Download CSV</a>'''
 
@@ -117,7 +112,10 @@ class Dataset:
                     <tbody>{body_html}</tbody>
                 </table>
             </div>
-        """                                  
+        """   
+
+    def __len__(self):
+        return len(self.data)
     
     def __getitem__(self, key):
         if isinstance(key, int):
@@ -492,5 +490,49 @@ class Dataset:
                 GroupBy: GroupBy object for aggregation
         """
         return GroupBy(self.data, by, sort)
-
     
+    def sort_values(self, by, ascending=True, inplace=False, na_position='last'):
+        if isinstance(by, str):
+            by = [by]
+        if isinstance(ascending, bool):
+            ascending = [ascending] * len(by)
+
+        if len(by) != len(ascending):
+            raise ValueError("Length of 'by' and 'ascending' must match.")
+
+        for col in by:
+            if col not in self.columns:
+                raise KeyError(f"Column '{col}' not found in dataset.")
+
+        def invert(val):
+            # For descending sort: convert to reverse-sortable proxy
+            if val is None:
+                return val
+            if isinstance(val, (int, float)):
+                return -val
+            if isinstance(val, str):
+                return ''.join(chr(255 - ord(c)) for c in val)
+            return val  # fallback for other types
+
+        def make_sort_key(row):
+            key = []
+            for col, asc in zip(by, ascending):
+                val = row.get(col)
+                is_nan = val is None
+
+                # Handle NA marker
+                nan_marker = 0 if is_nan and na_position == 'first' else 1 if is_nan else 2
+
+                sort_val = val if asc else invert(val)
+                key.append((nan_marker, sort_val))
+            return tuple(key)
+
+        sorted_data = sorted(self.data, key=make_sort_key)
+
+        if inplace:
+            self.data = sorted_data
+            return None
+        return Dataset(sorted_data)
+    
+    def len(self):
+        return len(self.data)
