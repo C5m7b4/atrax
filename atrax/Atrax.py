@@ -19,6 +19,7 @@ class Atrax:
     to_datetime = to_datetime
     date_range = date_range
     parse_date = parse_date
+    version = __version__
 
 
     @staticmethod
