@@ -1,7 +1,8 @@
 from datetime import datetime
 import numpy as np
 from .indexers import _ILoc, _Loc
-from atrax.utils import _DateTimeAccessor
+from ..utils.date_accessor import _DateTimeAccessor
+import statistics
 
 class Series:
 
@@ -59,6 +60,40 @@ class Series:
             
         """
         return _Loc(self)
+    
+    @property
+    def values(self):
+        """Returns the underlying data of the Series as a list.
+        
+        Examples:
+        >>> from atrax import Atrax as tx
+        >>> s = tx.Series([1, 2, 3], name='example', index=['a', 'b', 'c'])
+        >>> s.values
+        [1, 2, 3]
+        
+        >>> type(s.values)
+        list"""
+        return self.data
+
+    @property
+    def name(self):
+        """Returns the name of the Series.
+
+        Examples:
+        >>> from atrax import Atrax as tx
+        >>> s = tx.Series([1, 2, 3], name='example', index=['a', 'b', 'c'])
+        >>> s.name
+        'example'
+
+        >>> s = tx.Series([1, 2, 3])
+        >>> s.name
+        ''
+        """
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value      
     
     @property
     def dt(self):
@@ -256,6 +291,26 @@ class Series:
     
     def __pow__(self, other): 
         return self._binary_op(other, lambda a, b: a ** b)
+    
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+        from numpy import ndarray
+        raw_inputs = []
+        for x in inputs:
+            if isinstance(x, Series):
+                raw_inputs.append(x.data)
+            else:
+                raw_inputs.append(x)
+
+        result = getattr(ufunc, method)(*raw_inputs, **kwargs)
+
+        if isinstance(result, tuple):
+            # for ufuncs that return multiple outputs, return tuple of series
+            return tuple(Series(r, name=self.name) if isinstance(r, ndarray) else r for r in result)
+        elif isinstance(result, ndarray):
+            return Series(result.tolist(), name=self.name)
+        else:
+            return result
+
         
     def head(self, n=5):
         """
@@ -520,3 +575,89 @@ class Series:
                 new_data.append(None)
 
         return Series(new_data, name=self.name, index=self.index)
+    
+    def to_list(self):
+        """
+        Convert the Series to a list.
+
+        Returns:
+        list: The data in the Series as a list.
+
+        Example usage:
+        >>> s = tx.Series([1, 2, 3])
+        >>> lst = s.to_list()
+        >>> print(lst)
+        [1, 2, 3]
+
+        """
+        return self.data    
+    
+    def to_array(self):
+        return self.data
+    
+    def __array__(self, dtype=None):
+        return np.asarray(self.data, dtype=dtype)
+    
+    def mean(self, axis=None):
+        return sum(self.data) / len(self.data)
+    
+    def std(self, axis=None, ddof=0):
+        return statistics.stdev(self.data)
+    
+    def var(self, sample=True):
+        n = len(self.data)
+        if n < 2 and sample:
+            raise ValueError("Sample variance requires at least two data points")
+        mean = sum(self.data) / n
+        sum_sq_diff = sum((x - mean) ** 2 for x in self.data)
+        return sum_sq_diff / ( n - 1 if sample else n)
+
+    def sum(self, axis=None):
+        return sum(self.data)
+
+    def min(self, axis=None):
+        return min(self.data)
+
+    def max(self, axis=None):
+        return max(self.data)
+
+    def median(self, axis=None):
+        return statistics.median(self.data)
+
+    def prod(self, axis=None):
+        result = 1
+        for x in self.data:
+            result *= x
+        return result
+
+    def cumsum(self, axis=None):
+        result = []
+        total = 0
+        for x in self.data:
+            total += x
+            result.append(total)
+        return Series(result, name=self.name)
+
+    def cumprod(self, axis=None):
+        result = []
+        total = 1
+        for x in self.data:
+            total *= x
+            result.append(total)
+        return Series(result, name=self.name)
+
+    def cummin(self):
+        result = []
+        current_min = None
+        for x in self.data:
+            current_min = x if current_min is None else min(current_min, x)
+            result.append(current_min)
+        return Series(result, name=self.name)
+
+    def cummax(self):
+        result = []
+        current_max = None
+        for x in self.data:
+            current_max = x if current_max is None else max(current_max, x)
+            result.append(current_max)
+        return Series(result, name=self.name)   
