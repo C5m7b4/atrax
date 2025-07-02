@@ -158,6 +158,11 @@ class Series:
         """
         return _DateTimeAccessor(self)
     
+    @property
+    def dtype(self):
+        return self._dtype
+    
+    
 
     def __init__(self, data, name=None, index=None):
         """
@@ -219,7 +224,7 @@ class Series:
         # let's make sure that if the user supplied indexes that the length is correct
         if len(self.data) != len(self.index):
             raise ValueError(f"Length of index must match the length of the data, you supplied {len(self.data)} for data and {len(self.index)} for indexes")
-        self.dtype = self._infer_dtype()
+        self._dtype = self._infer_dtype()
 
     def __len__(self):
         return len(self.data)
@@ -233,7 +238,7 @@ class Series:
         lines.extend([f'{str(i)}    {str(d)}' for i, d in zip(self.index[0:10], self.data[0:10])])
         if len(self.data) > 10:
             lines.append(f"...({len(self.data)} total items)")
-        lines.append(f'Name: {self.name}   dtype: {self.dtype}')
+        lines.append(f'Name: {self.name}   dtype: {self._dtype}')
         return '\n'.join(lines)
 
     def _repr_html_(self):
@@ -241,7 +246,7 @@ class Series:
         for idx, val in zip(self.index[:10], self.data[:10]):
             html += f"<tr><td style='text-align: 'left';'>{idx}</td>"
             html += f"<td>{val}</td></tr>"
-        html += f"<tr><td colspan='2' style='font-size:14px;'>Name: {self.name}, dtype: {self.dtype}</td></tr>"
+        html += f"<tr><td colspan='2' style='font-size:14px;'>Name: {self.name}, dtype: {self._dtype}</td></tr>"
         if len(self.data) > 10:
             html += f"<tr><td colspan='2'><i>...{len(self.data)-10} more</i></td></tr>"
         html += "</table>"
