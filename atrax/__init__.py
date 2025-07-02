@@ -16,14 +16,16 @@ from .Dataset.dataset import Dataset
 # from .core.qcut import qcut
 # from .core.cut import cut
 # from .core.customdatetime import to_datetime, date_range
+from .utils import to_datetime, date_range, parse_date
 
 class Atrax:
     Series = Series
     DataSet = Dataset
     # qcut = qcut
     # cut = cut
-    # to_datetime = to_datetime
-    # date_range = date_range
+    to_datetime = to_datetime
+    date_range = date_range
+    parse_date = parse_date
 
 
     @staticmethod
