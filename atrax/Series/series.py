@@ -1,6 +1,7 @@
 from datetime import datetime
 import numpy as np
 from .indexers import _ILoc, _Loc
+from atrax.utils import _DateTimeAccessor
 
 class Series:
 
@@ -58,6 +59,69 @@ class Series:
             
         """
         return _Loc(self)
+    
+    @property
+    def dt(self):
+        """
+        Provides datetime-like properties for the Series.
+        
+        Examples:
+        >>> from atrax import Atrax as tx
+        >>> test_data = [
+            {
+                'id': 1,
+                'sale_date': '1/1/2025'
+            },
+            {
+                'id': 2,
+                'sale_date': '1/2/2025'
+            },
+            {
+                'id': 3,
+                'sale_date': '1/3/2025'
+            }
+        ]
+        >>> ds = tx.DataSet(test_data)
+
+        >>> ds['weekday'] = ds['sale_date'].dt.weekday
+        >>> ds.head()
+        id    sale_date    weekday
+        1     1/1/2025     2
+        2     1/2/2025     3
+        3     1/3/2025     4
+
+
+        >>> ds['is_weekend'] = ds['sale_date'].dt.is_weekend
+        >>> ds.head()
+        id    sale_date    weekday   is_weekend
+        1     1/1/2025     2         False
+        2     1/2/2025     3         False
+        3     1/3/2025     4         False
+
+        >>> ds['month'] = ds['sale_date'].dt.month
+        >>> ds.head()
+        id    sale_date    weekday   is_weekend   month
+        1     1/1/2025     2         False        1
+        2     1/2/2025     3         False        1
+        3     1/3/2025     4         False        1
+
+        >>> ds['day'] = ds['sale_date'].dt.day
+        >>> ds.head()
+        id    sale_date    weekday   is_weekend   month  day
+        1     1/1/2025     2         False        1      1
+        2     1/2/2025     3         False        1      2
+        3     1/3/2025     4         False        1      3
+
+        >>> ds['year'] = ds['sale_date'].dt.year
+        >>> ds.head()
+        id    sale_date    weekday   is_weekend   month  day  year
+        1     1/1/2025     2         False        1      1    2025
+        2     1/2/2025     3         False        1      2    2025
+        3     1/3/2025     4         False        1      3    2025  
+
+
+        """
+        return _DateTimeAccessor(self)
     
 
     def __init__(self, data, name=None, index=None):
@@ -124,6 +188,9 @@ class Series:
 
     def __len__(self):
         return len(self.data)
+    
+    def __iter__(self):
+        return iter(self.data)
 
     def __repr__(self):
         lines = []
