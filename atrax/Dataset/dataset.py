@@ -536,3 +536,173 @@ class Dataset:
     
     def len(self):
         return len(self.data)
+    
+    def mean(self, axis=0):
+        """
+        Compute the mean along the specified axis.
+
+        Parameters
+        ----------
+        axis : int
+            Axis to compute the mean on:
+            - 0: column-wise (default)
+            - 1: row-wise
+
+        Returns
+        -------
+        dict or list
+            - If axis=0: returns a dict with mean for each numeric column.
+            - If axis=1: returns a list with mean for each row.
+        """
+        from statistics import mean
+
+        if axis == 0:
+            # Column-wise mean
+            result = {}
+            for col in self.columns:
+                try:
+                    values = [row[col] for row in self.data if isinstance(row[col], (int, float))]
+                    if values:
+                        result[col] = mean(values)
+                except Exception:
+                    continue
+            return result
+
+        elif axis == 1:
+            # Row-wise mean
+            row_means = []
+            for row in self.data:
+                numeric_vals = [v for v in row.values() if isinstance(v, (int, float))]
+                if numeric_vals:
+                    row_means.append(mean(numeric_vals))
+                else:
+                    row_means.append(float('nan'))
+            return row_means
+
+        else:
+            raise ValueError("Invalid axis. Must be 0 (columns) or 1 (rows).")
+        
+    def dropna(self, subset=None, how='any', thresh=None, inplace=False):
+        """
+        Drop rows with missing values.
+
+        Parameters
+        ----------
+        subset : list of str, optional
+            Columns to check. Default is all columns.
+        how : {'any', 'all'}, default 'any'
+            - 'any': Drop rows that have any NaNs in the specified subset.
+            - 'all': Drop rows that have all NaNs in the specified subset.
+        thresh : int, optional
+            Require at least this many non-NA values to keep the row.
+            Overrides `how` if provided.
+        inplace : bool, default False
+            Whether to modify the dataset in place.
+
+        Returns
+        -------
+        Dataset or None
+        """
+        import math
+
+        def is_na(val):
+            return val is None or (isinstance(val, float) and math.isnan(val))
+
+        if subset is None:
+            subset = self.columns
+
+        def count_non_na(row):
+            return sum(not is_na(row.get(col)) for col in subset)
+
+        if thresh is not None:
+            filtered = [row for row in self.data if count_non_na(row) >= thresh]
+        elif how == 'any':
+            filtered = [row for row in self.data if not any(is_na(row.get(col)) for col in subset)]
+        elif how == 'all':
+            filtered = [row for row in self.data if not all(is_na(row.get(col)) for col in subset)]
+        else:
+            raise ValueError("Invalid value for 'how'. Use 'any' or 'all'.")
+
+        if inplace:
+            self.data = filtered
+            return None
+        else:
+            return Dataset(filtered)
+ 
+
+    def reset_index(self, inplace=True):
+        """
+        Reset the index to default integer index.
+        
+        Parameters
+        ----------
+        inplace : bool
+            Whether to modify in place or return a new Dataset.
+        """
+        if inplace:
+            self._index = None
+            self._index_name = None
+            return None
+        else:
+            new_ds = Dataset(self.data.copy())
+            new_ds._index = None
+            new_ds._index_name = None
+            return new_ds              
+
+    def isna(self):
+        """
+        Return a Dataset of the same shape indicating missing values (None or NaN).
+
+        Returns
+        -------
+        Dataset
+            Dataset with boolean values: True if missing, False otherwise.
+        """
+        import math
+
+        def is_na(val):
+            return val is None or (isinstance(val, float) and math.isnan(val))
+
+        result = []
+        for row in self.data:
+            result.append({col: is_na(row.get(col)) for col in self.columns})
+        return Dataset(result)
+    
+    def fillna(self, value, inplace=False):
+        """
+        Fill missing values in the Dataset.
+
+        Parameters
+        ----------
+        value : scalar or dict
+            Value to replace missing values with. Can be a single value or a column-wise dict.
+        inplace : bool
+            If True, modifies the dataset in-place.
+
+        Returns
+        -------
+        Dataset or None
+            Returns filled Dataset or None if inplace=True.
+        """
+        import math
+
+        def is_na(val):
+            return val is None or (isinstance(val, float) and math.isnan(val))
+
+        def fill_row(row):
+            return {
+                col: row.get(col) if not is_na(row.get(col))
+                else value[col] if isinstance(value, dict) and col in value
+                else value if not isinstance(value, dict)
+                else row.get(col)
+                for col in self.columns
+            }
+
+        filled = [fill_row(row) for row in self.data]
+
+        if inplace:
+            self.data = filled
+            return None
+        else:
+            return Dataset(filled)
+
