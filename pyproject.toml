@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "atrax"
-version = "0.0.16"
+version = "0.0.25"
 description = "A pandas-like library for tabular and time series data."
 authors = [
     { name="C5m7b4", email="c5m7b4@gmail.com" }
@@ -18,7 +18,9 @@ dependencies = ["psycopg2", "sqlalchemy"]
 [project.optional-dependencies]
 dev = ["pytest"]
 
-
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["atrax*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
@@ -31,8 +33,6 @@ addopts = """
     -v
 """
 
-[tool.setuptools]
-packages = ["atrax"]
 
 [project.urls]
 Homepage="https://github.com/C5m7b4/atrax"
