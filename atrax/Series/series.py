@@ -666,3 +666,40 @@ class Series:
             current_max = x if current_max is None else max(current_max, x)
             result.append(current_max)
         return Series(result, name=self.name)   
+    
+    def shift(self, periods=1, fill_value=None):
+        """
+            Shift the values in the Series by the given number of periods.
+
+            Parameters:
+            ________
+                periods (int): default 1. number of periods to shift
+                fill_value (scalar): default None. scalar value to use for missing values
+
+            Returns:
+            ________
+                Series
+
+            Examples:
+
+            >>> s = Series([10, 20, 30], name="a", index=["x", "y", "z"])
+            >>> s.shift(1)
+            x    None
+            y      10
+            z      20
+            Name: a, dtype: int                
+        """
+        if not isinstance(periods, int):
+            raise TypeError("periods must be an integer")
+        
+        n = len(self.data)
+
+        if periods > 0:
+            new_data = [fill_value] * periods + self.data[:n - periods]
+        elif periods < 0:
+            new_data = self.data[-periods:] + [fill_value] * (-periods)
+        else:
+            new_data = self.data[:]
+
+        return Series(new_data, name=self.name, index=self.index)
+
