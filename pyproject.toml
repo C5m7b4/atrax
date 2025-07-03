@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "atrax"
-version = "0.0.30"
+version = "0.0.33"
 description = "A pandas-like library for tabular and time series data."
 authors = [
     { name="C5m7b4", email="c5m7b4@gmail.com" }
