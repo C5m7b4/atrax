@@ -12,16 +12,55 @@ class GroupBy:
     """
 
     def __init__(self, data, by, sort=False):
-        self.by = by if isinstance(by, list) else [by]
+        self.by = by
+        self._by_list = by if isinstance(by, list) else [by]
         self.data = data
         self.sort = sort
         self.groups = self._group_data()
+        self._selected_column = None
+
+    def __getitem__(self, key):
+        """
+            Allow column access after groupby, e.g. ds.groupby('col')['target']
+
+            Parameters:
+            ----------
+                key (str): column to select
+            
+            Returns:
+                GroupBy
+        """
+        if not isinstance(key, str):
+            raise TypeError(f"Unsupported key type: {type(key)}")
+        
+        column_found = any(key in row for rows in self.groups.values() for row in rows)
+        if not column_found:
+            raise KeyError(f"Columns '{key}' not found in grouped data")
+        
+
+        new_groups = {}
+        for group_key, rows in self.groups.items():
+            new_groups[group_key] = [row[key] for row in rows if key in row]
+        
+        # create a new groupby object with same grouping keys and filtered groups
+        new_obj = GroupBy(self.data, self._by_list)
+        new_obj.groups = new_groups
+        new_obj._selected_column = key
+        return new_obj
+
 
     def _group_data(self):
         grouped = defaultdict(list)
+        is_single_key = len(self._by_list) == 1
+
+
         for row in self.data:
-            key = tuple(row[k] for k in self.by)
+            if is_single_key:
+                key = row[self._by_list[0]]
+            else:
+                key = tuple(row[k] for k in self._by_list)
             grouped[key].append(row)
+
         if self.sort:
             return dict(sorted(grouped.items()))
         return grouped
@@ -52,7 +91,7 @@ class GroupBy:
                         result_col = self._output_col_name(input_col, agg_func)
                         aggregated_row[result_col] = self._apply_func(agg_func, values, input_col)
 
-            for i, col in enumerate(self.by):
+            for i, col in enumerate(self._by_list):
                 aggregated_row[col] = group_key[i]
 
             result.append(aggregated_row)
@@ -89,15 +128,60 @@ class GroupBy:
         else:
             raise TypeError("Aggregation function must be a string or callable")
 
-    def agg(self, *args, **kwargs):
-        if args and isinstance(args[0], dict):
-            return self._aggregate(args[0], named_agg=False)
-        elif kwargs:
-            return self._aggregate(kwargs, named_agg=True)
+    def agg(self, func=None, **kwargs):
+        from atrax import Dataset
+        if self._selected_column is not None:
+            # 🟦 Single-column case: ds.groupby(...)[col].agg('sum') or agg(func)
+            if func is None:
+                raise ValueError("Must provide an aggregation function for selected column")
+
+            result = {}
+            for group_key, values in self.groups.items():
+                if callable(func):
+                    result[group_key] = func(values)
+                elif isinstance(func, str):
+                    result[group_key] = self._apply_named_func(values, func)
+                else:
+                    raise TypeError(f"Invalid aggregation function: {func}")
+            return result
+
         else:
-            raise ValueError("agg() requires either a dict or named arguments")
+            # 🟩 Multi-column case: ds.groupby(...).agg({'col1': 'sum', ...})
+            agg_map = {}
+            if isinstance(func, dict):
+                return self._aggregate(func, named_agg=False)
+            elif kwargs:
+                if all(isinstance(v, tuple) and len(v) == 2 for v in kwargs.values()):
+                    return self._aggregate(kwargs, named_agg=True)
+                else:
+                    raise TypeError("Named aggregation must be in the form output_col=(input_col, agg_func)")
+            else:
+                raise ValueError("agg() requires a dict or named arguments when no column is selected")
+
+            # result = []
+            # for group_key, rows in self.groups.items():
+            #     agg_row = {}
+            #     if len(self._by_list) == 1:
+            #         agg_row[self.by[0]] = group_key
+            #     else:
+            #         for i, col in enumerate(self._by_list):
+            #             agg_row[col] = group_key=[i]
+            #     for col, agg_func in agg_map.items():
+            #         values = [row[col] for row in rows if col in row]
+            #         if callable(agg_func):
+            #             agg_value = agg_func(values)
+            #         elif isinstance(agg_func, str):
+            #             agg_value = self._apply_named_func(values, agg_func)
+            #         else:
+            #             raise TypeError(f"Unsupported agg function: {agg_func}")
+            #         agg_row[f"{col}_{agg_func}"] = agg_value
+            #     result.append(agg_row)
+            # return Dataset(result)
+  
 
     def sum(self):
+        if self._selected_column:
+            return self.agg('sum')
         return self.agg({col: 'sum' for col in self._numeric_columns()})
 
     def mean(self):
@@ -125,7 +209,7 @@ class GroupBy:
         from .dataset import Dataset
         result = []
         for group_key, rows in self.groups.items():
-            row = {col: key for col, key in zip(self.by, group_key)}
+            row = {col: key for col, key in zip(self._by_list, group_key)}
             row['size'] = len(rows)
             result.append(row)
         return Dataset(result)
@@ -140,12 +224,12 @@ class GroupBy:
         for group_key, rows in self.groups.items():
             out = func(rows)
             if isinstance(out, dict):
-                for i, col in enumerate(self.by):
+                for i, col in enumerate(self._by_list):
                     out[col] = group_key[i]
                 result.append(out)
             elif isinstance(out, list):
                 for row in out:
-                    for i, col in enumerate(self.by):
+                    for i, col in enumerate(self._by_list):
                         row[col] = group_key[i]
                     result.append(row)
             else:
@@ -169,13 +253,27 @@ class GroupBy:
         result = []
         for group_key, rows in self.groups.items():
             out = func(rows)
+
             if not isinstance(out, list) or len(out) != len(rows):
                 raise ValueError("transform() must return a list of dicts equal in length to input group")
-            for i, col in enumerate(self.by):
-                for row in out:
-                    row[col] = group_key[i]
-            result.extend(out)
-        return Dataset(result)  
+            
+            for i, val in enumerate(out):
+                if isinstance(val, dict):
+                    row = val.copy()
+                else:
+                    row = {self._selected_column or 'value': val}
+
+                # attach group keys
+                if len(self._by_list) == 1:
+                    row[self._by_list[0]] = group_key
+                else:
+                    for j, col in enumerate(self._by_list):
+                        row[col] = group_key[j]
+
+                result.append(row)
+
+
+        return Dataset(result) 
 
     def filter(self, func):
         """
@@ -186,7 +284,7 @@ class GroupBy:
         for group_key, rows in self.groups.items():
             if func(rows):
                 for row in rows:
-                    for i, col in enumerate(self.by):
+                    for i, col in enumerate(self._by_list):
                         row[col] = group_key[i]
                     result.append(row)
         return Dataset(result)      
@@ -204,7 +302,7 @@ class GroupBy:
                 summary[f'{col}_mean'] = sum(values) / len(values) if values else None
                 summary[f'{col}_min'] = min(values) if values else None
                 summary[f'{col}_max'] = max(values) if values else None
-            for i, col in enumerate(self.by):
+            for i, col in enumerate(self._by_list):
                 summary[col] = group_key[i]
             result.append(summary)
         return Dataset(result)    
@@ -220,7 +318,7 @@ class GroupBy:
                 for col in numeric_cols:
                     cum_sums[col] += row.get(col, 0)
                     new_row[f'{col}_cumsum'] = cum_sums[col]
-                for i, col in enumerate(self.by):
+                for i, col in enumerate(self._by_list):
                     new_row[col] = group_key[i]
                 result.append(new_row)
         return Dataset(result)    
@@ -232,7 +330,7 @@ class GroupBy:
             for i, row in enumerate(rows):
                 new_row = row.copy()
                 new_row['cumcount'] = i
-                for j, col in enumerate(self.by):
+                for j, col in enumerate(self._by_list):
                     new_row[col] = group_key[j]
                 result.append(new_row)
         return Dataset(result)    
@@ -259,8 +357,31 @@ class GroupBy:
                 for idx, row in enumerate(rows):
                     row[f'{col}_rank'] = ranks[idx]
             for row in rows:
-                for i, col in enumerate(self.by):
+                for i, col in enumerate(self._by_list):
                     row[col] = group_key[i]
                 result.append(row)
         return Dataset(result)
+    
+
+    def _apply_named_func(self, values, func_name):
+        if func_name == 'mean':
+            return sum(values) / len(values) if values else None
+        elif func_name == 'sum':
+            return sum(values)
+        elif func_name == 'max':
+            return max(values)
+        elif func_name == 'min':
+            return min(values)
+        elif func_name == 'avg':
+            return sum(values) / len(values) if values else None
+        elif func_name == 'count':
+            return len(values)
+        elif func_name == 'first':
+            return values[0]
+        elif func_name == 'last':
+            return values[len(values)-1]
+        elif func_name == 'size':
+            return len(values)
+        else:
+            raise ValueError(f"Unsupported aggregation function: {func_name}")    
 
