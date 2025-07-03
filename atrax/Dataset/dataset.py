@@ -630,24 +630,40 @@ class Dataset:
             return Dataset(filtered)
  
 
-    def reset_index(self, inplace=True):
+    def reset_index(self, drop=False, inplace=True):
         """
         Reset the index to default integer index.
-        
+
         Parameters
         ----------
-        inplace : bool
-            Whether to modify in place or return a new Dataset.
+        drop : bool, default False
+            Do not add the index as a column.
+        inplace : bool, default True
+            Modify the dataset in place.
+
+        Returns
+        -------
+        DataSet or None
+            Modified dataset if inplace=False, otherwise None.
         """
+        data = self.data.copy()
+        
+        if not drop and self._index is not None:
+            index_name = self._index_name or "index"
+            for i, row in enumerate(data):
+                row[index_name] = self._index[i]
+
         if inplace:
+            self.data = data
             self._index = None
             self._index_name = None
             return None
         else:
-            new_ds = Dataset(self.data.copy())
+            new_ds = Dataset(data)
             new_ds._index = None
             new_ds._index_name = None
-            return new_ds              
+            return new_ds
+             
 
     def isna(self):
         """
